@@ -1,0 +1,573 @@
+{% extends "base.html" %}
+{% block title %}Post Your Idea — CollabHub{% endblock %}
+
+{% block extra_styles %}
+<style>
+
+  /* ═══════════════════════════════════
+     PAGE HEADER BANNER
+  ═══════════════════════════════════ */
+  .page-banner {
+    background: linear-gradient(135deg,
+      rgba(254,243,231,0.9) 0%,
+      rgba(224,242,254,0.95) 50%,
+      rgba(253,240,235,0.9) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 28px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: background var(--tr), border-color var(--tr);
+  }
+  [data-theme="dark"] .page-banner {
+    background: linear-gradient(135deg,
+      rgba(45,26,16,0.6) 0%,
+      rgba(30,41,59,0.7) 50%,
+      rgba(26,15,30,0.6) 100%);
+  }
+  .page-banner::before {
+    content: '';
+    position: absolute; top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse,
+      rgba(244,113,58,0.15) 0%,
+      rgba(255,107,157,0.1) 40%,
+      transparent 70%);
+    pointer-events: none;
+    animation: float 15s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(-12px); }
+  }
+
+  .banner-eyebrow {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: linear-gradient(135deg, rgba(254,240,235,0.9), rgba(253,242,248,0.95));
+    color: var(--accent);
+    border: 1px solid rgba(244,113,58,0.3);
+    padding: 5px 14px; border-radius: 40px;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 16px rgba(244,113,58,0.15);
+    animation: fadeUp 0.4s ease both;
+  }
+  [data-theme="dark"] .banner-eyebrow {
+    background: linear-gradient(135deg, rgba(45,26,16,0.8), rgba(46,16,101,0.4));
+  }
+  .banner-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: linear-gradient(135deg, #f4713a, #ff6b9d);
+    box-shadow: 0 0 8px rgba(244,113,58,0.6);
+    animation: pulse-d 1.8s infinite;
+  }
+  @keyframes pulse-d { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(0.7);opacity:0.5;} }
+
+  .page-banner h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 700; line-height: 1.15;
+    background: linear-gradient(135deg, #1c1917 0%, #f4713a 50%, #6366f1 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    animation: fadeUp 0.4s 0.1s ease both;
+  }
+  [data-theme="dark"] .page-banner h1 {
+    background: linear-gradient(135deg, #fafaf9 0%, #f4713a 50%, #818cf8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .page-banner p {
+    font-size: 16px; color: var(--ink3); max-width: 420px;
+    margin: 0 auto; line-height: 1.7;
+    animation: fadeUp 0.4s 0.2s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ═══════════════════════════════════
+     LAYOUT — TWO-COLUMN
+  ═══════════════════════════════════ */
+  .form-layout {
+    max-width: 1000px; margin: 0 auto;
+    padding: 36px 28px 80px;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* ═══════════════════════════════════
+     FORM CARD
+  ═══════════════════════════════════ */
+  .form-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    box-shadow: var(--shadow-sm);
+    transition: background var(--tr), border-color var(--tr);
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+
+  .form-section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px; font-weight: 600;
+    color: var(--ink); margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .form-section-title .sec-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+
+  /* Field */
+  .field { margin-bottom: 22px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 700;
+    color: var(--ink3); text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 8px;
+  }
+  .field label .req { color: var(--accent); margin-left: 2px; }
+
+  .field input,
+  .field textarea,
+  .field select {
+    width: 100%; padding: 11px 15px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    background: var(--bg);
+    color: var(--ink); font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    outline: none; transition: all var(--tr);
+    resize: vertical;
+  }
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus {
+    border-color: var(--accent);
+    background: var(--bg2);
+    box-shadow: 0 0 0 3px rgba(244,113,58,0.12);
+  }
+  .field input::placeholder,
+  .field textarea::placeholder { color: var(--ink4); }
+  .field textarea { min-height: 110px; line-height: 1.6; }
+
+  .field-hint {
+    font-size: 12px; color: var(--ink3); margin-top: 6px; line-height: 1.5;
+  }
+
+  /* Row of two fields */
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* Skills dynamic input */
+  .skills-input-wrap {
+    border: 1.5px solid var(--border); border-radius: var(--r);
+    background: var(--bg); padding: 10px 12px;
+    transition: all var(--tr); min-height: 52px;
+    display: flex; flex-wrap: wrap; gap: 7px; align-items: center;
+    cursor: text;
+  }
+  .skills-input-wrap:focus-within {
+    border-color: var(--accent);
+    background: var(--bg2);
+    box-shadow: 0 0 0 3px rgba(244,113,58,0.12);
+  }
+  .skill-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--accent-soft); color: var(--accent);
+    border: 1px solid rgba(244,113,58,0.25);
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 13px; font-weight: 500;
+  }
+  .skill-pill .rm {
+    cursor: pointer; font-size: 14px; line-height: 1;
+    color: rgba(244,113,58,0.6); transition: color 0.15s;
+    border: none; background: none;
+  }
+  .skill-pill .rm:hover { color: var(--accent); }
+  .skill-pill.needed {
+    background: var(--green-soft); color: var(--green);
+    border-color: rgba(22,163,74,0.25);
+  }
+  .skill-pill.needed .rm { color: rgba(22,163,74,0.6); }
+  .skill-pill.needed .rm:hover { color: var(--green); }
+  #skillText {
+    border: none; outline: none; background: transparent;
+    color: var(--ink); font-family: 'Outfit', sans-serif;
+    font-size: 14px; min-width: 140px; flex: 1;
+  }
+
+  /* Skill type radio */
+  .skill-type-row {
+    display: flex; gap: 8px; margin-bottom: 10px;
+  }
+  .stype {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: var(--r-sm);
+    border: 1.5px solid var(--border); cursor: pointer;
+    font-size: 13px; font-weight: 500; color: var(--ink2);
+    transition: all var(--tr); user-select: none;
+  }
+  .stype input { display: none; }
+  .stype:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+
+  /* Slot count */
+  .slot-counter {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .slot-btn {
+    width: 34px; height: 34px; border-radius: var(--r-sm);
+    border: 1.5px solid var(--border); background: var(--bg);
+    color: var(--ink2); font-size: 18px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all var(--tr);
+  }
+  .slot-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .slot-num {
+    font-family: 'Fraunces', serif; font-size: 24px;
+    font-weight: 700; color: var(--ink); min-width: 32px;
+    text-align: center;
+  }
+  .slot-label { font-size: 13px; color: var(--ink3); }
+
+  /* Divider */
+  .f-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    color: #fff; border: none; border-radius: var(--r);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    transition: all var(--tr); letter-spacing: 0.2px;
+    box-shadow: 0 4px 16px rgba(244,113,58,0.3);
+    position: relative; overflow: hidden;
+  }
+  .submit-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
+    opacity: 0; transition: opacity var(--tr);
+  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(244,113,58,0.45); }
+  .submit-btn:hover::before { opacity: 1; }
+  .submit-btn:active { transform: translateY(0); }
+
+  /* ═══════════════════════════════════
+     SIDEBAR TIPS
+  ═══════════════════════════════════ */
+  .tip-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 22px;
+    margin-bottom: 16px;
+    transition: background var(--tr), border-color var(--tr);
+    animation: fadeUp 0.5s 0.2s ease both;
+  }
+  .tip-head {
+    font-size: 13px; font-weight: 700; color: var(--ink);
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .tip-head .t-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .tip-head .t-icon.orange { background: var(--accent-soft); }
+  .tip-head .t-icon.green  { background: var(--green-soft); }
+  .tip-head .t-icon.blue   { background: var(--blue-soft); }
+
+  .tip-item {
+    display: flex; gap: 9px; margin-bottom: 10px;
+    font-size: 13px; color: var(--ink2); line-height: 1.5;
+  }
+  .tip-item:last-child { margin-bottom: 0; }
+  .tip-item .ti { flex-shrink: 0; color: var(--accent); font-weight: 700; }
+
+  .preview-card {
+    background: linear-gradient(135deg, var(--accent-soft), var(--bg2));
+    border: 1.5px solid rgba(244,113,58,0.2);
+    border-radius: var(--r-lg); padding: 22px;
+    animation: fadeUp 0.5s 0.3s ease both;
+    transition: background var(--tr), border-color var(--tr);
+  }
+  .preview-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px; font-weight: 600; color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .prev-stat {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 13px; color: var(--ink2); margin-bottom: 9px;
+  }
+  .prev-stat .ps-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: var(--bg2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+
+  @media (max-width: 768px) {
+    .form-layout { grid-template-columns: 1fr; }
+    .form-side { display: none; }
+    .form-card { padding: 22px; }
+    .field-row { grid-template-columns: 1fr; }
+    .page-banner { padding: 36px 20px 28px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-banner">
+  <div class="banner-eyebrow">
+    <span class="banner-dot"></span> Share your vision
+  </div>
+  <h1>Launch your startup idea ✦</h1>
+  <p>Tell us what you're building. The right co-founders and investors are already on CollabHub.</p>
+</div>
+
+<div class="form-layout">
+
+  <div class="form-card">
+    <form method="POST" action="{{ url_for('post_idea') }}" id="ideaForm">
+
+      <div class="form-section-title">
+        <span class="sec-icon">✦</span> The Big Idea
+      </div>
+
+      <div class="field">
+        <label>Idea Title <span class="req">*</span></label>
+        <input
+          type="text" name="title" id="titleInput"
+          placeholder="e.g. AI that reads legal contracts for small businesses"
+          value="{{ request.form.get('title', '') }}"
+          maxlength="200" required
+        />
+        <div class="field-hint">Be specific — a clear title gets more applications.</div>
+      </div>
+
+      <div class="field">
+        <label>What problem does it solve? <span class="req">*</span></label>
+        <textarea
+          name="description" rows="5" required
+          placeholder="Describe the problem clearly and how your idea fixes it. Keep it simple — what hurts for your user, and how do you fix it?"
+        >{{ request.form.get('description', '') }}</textarea>
+        <div class="field-hint">Aim for 2–4 sentences. Clarity beats buzzwords every time.</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Category <span class="req">*</span></label>
+          <select name="category" required>
+            <option value="">Select a category…</option>
+            {% for cat in ['AI/ML','HealthTech','FinTech','CleanTech','EdTech','Other'] %}
+            <option value="{{ cat }}" {% if request.form.get('category') == cat %}selected{% endif %}>
+              {{ cat }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Current Stage <span class="req">*</span></label>
+          <select name="stage" required>
+            <option value="">Select stage…</option>
+            {% for st in ['Just an idea','Building MVP','Launched','Growing'] %}
+            <option value="{{ st }}" {% if request.form.get('stage') == st %}selected{% endif %}>
+              {{ st }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <hr class="f-divider" />
+
+      <div class="form-section-title">
+        <span class="sec-icon">👥</span> Build Your Team
+      </div>
+
+      <div class="field">
+        <label>Open Team Spots</label>
+        <div class="slot-counter">
+          <button type="button" class="slot-btn" onclick="changeSlots(-1)">−</button>
+          <span class="slot-num" id="slotDisplay">2</span>
+          <input type="hidden" name="slots_open" id="slotsInput" value="2" />
+          <span class="slot-label">co-founders / team members needed</span>
+        </div>
+        <div class="field-hint">How many people are you looking to bring on board?</div>
+      </div>
+
+      <div class="field">
+        <label>Skills Needed <span class="req">*</span></label>
+        <div class="skill-type-row">
+          <label class="stype">
+            <input type="radio" name="skill_type_sel" value="needed" checked />
+            🟢 Needed
+          </label>
+          <label class="stype">
+            <input type="radio" name="skill_type_sel" value="have" />
+            ✅ Already have
+          </label>
+        </div>
+        <div class="skills-input-wrap" id="skillsWrap" onclick="document.getElementById('skillText').focus()">
+          <input
+            type="text" id="skillText"
+            placeholder="Type a skill and press Enter or comma…"
+          />
+        </div>
+        <!-- Hidden inputs filled by JS -->
+        <div id="skillsHiddenContainer"></div>
+        <div class="field-hint">Press <strong>Enter</strong> or <strong>,</strong> to add. Toggle above to mark as needed vs. already have.</div>
+      </div>
+
+      <hr class="f-divider" />
+
+      <!-- SECTION 3: EXTRA -->
+      <div class="form-section-title">
+        <span class="sec-icon">🚀</span> More Details
+      </div>
+
+      <div class="field">
+        <label>Pitch in one line</label>
+        <input
+          type="text" name="pitch_line"
+          placeholder="e.g. 'Duolingo meets GST filing' or 'Airbnb for farm stays in India'"
+          value="{{ request.form.get('pitch_line', '') }}"
+          maxlength="150"
+        />
+        <div class="field-hint">Optional but helps investors and builders quickly get the idea.</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Your City</label>
+          <input
+            type="text" name="city_override"
+            placeholder="e.g. Bengaluru"
+            value="{{ request.form.get('city_override', '') }}"
+          />
+        </div>
+        <div class="field">
+          <label>Looking for investors?</label>
+          <select name="seeking_investors">
+            <option value="0" {% if request.form.get('seeking_investors','0') == '0' %}selected{% endif %}>Not right now</option>
+            <option value="1" {% if request.form.get('seeking_investors') == '1' %}selected{% endif %}>Yes, open to it</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">
+        ✦ Publish my idea →
+      </button>
+    </form>
+  </div>
+
+  <!-- SIDEBAR TIPS -->
+  <aside class="form-side">
+
+    <div class="tip-card">
+      <div class="tip-head">
+        <span class="t-icon orange">💡</span> What makes a great post
+      </div>
+      <div class="tip-item"><span class="ti">1.</span> Start with the problem, not the solution.</div>
+      <div class="tip-item"><span class="ti">2.</span> Be specific about who your user is.</div>
+      <div class="tip-item"><span class="ti">3.</span> List skills you genuinely need — don't say "everything".</div>
+      <div class="tip-item"><span class="ti">4.</span> Short and clear beats long and vague.</div>
+    </div>
+
+    <div class="tip-card">
+      <div class="tip-head">
+        <span class="t-icon green">🙋</span> Getting applications fast
+      </div>
+      <div class="tip-item"><span class="ti">✦</span> Ideas with specific skill needs get 3x more applications.</div>
+      <div class="tip-item"><span class="ti">✦</span> Mention your stage — builders want to know where you are.</div>
+      <div class="tip-item"><span class="ti">✦</span> Reply to applicants within 24 hours.</div>
+    </div>
+
+    <div class="preview-card">
+      <div class="preview-title">🔭 Live on CollabHub</div>
+      <div class="prev-stat">
+        <span class="ps-icon">👁</span> Avg. 200+ views in first 48 hours
+      </div>
+      <div class="prev-stat">
+        <span class="ps-icon">🙋</span> Avg. 12 applications per idea
+      </div>
+      <div class="prev-stat">
+        <span class="ps-icon">💰</span> 240 investors actively browsing
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function changeSlots(delta) {
+    const input = document.getElementById('slotsInput');
+    const display = document.getElementById('slotDisplay');
+    let val = parseInt(input.value) + delta;
+    if (val < 1) val = 1;
+    if (val > 8) val = 8;
+    input.value = val;
+    display.textContent = val;
+  }
+
+  const skills = [];  
+
+  function addSkill(name) {
+    name = name.trim().replace(/,/g, '');
+    if (!name || skills.find(s => s.name.toLowerCase() === name.toLowerCase())) return;
+    const type = document.querySelector('input[name="skill_type_sel"]:checked').value;
+    skills.push({ name, type });
+    renderSkills();
+  }
+
+  function removeSkill(idx) {
+    skills.splice(idx, 1);
+    renderSkills();
+  }
+
+  function renderSkills() {
+    const wrap = document.getElementById('skillsWrap');
+    const hidden = document.getElementById('skillsHiddenContainer');
+    wrap.querySelectorAll('.skill-pill').forEach(el => el.remove());
+    hidden.innerHTML = '';
+    skills.forEach((s, i) => {
+      const pill = document.createElement('span');
+      pill.className = 'skill-pill' + (s.type === 'needed' ? ' needed' : '');
+      pill.innerHTML = `${s.name} <button type="button" class="rm" onclick="removeSkill(${i})">×</button>`;
+      wrap.insertBefore(pill, document.getElementById('skillText'));
+      hidden.innerHTML += `<input type="hidden" name="skill_names[]"  value="${s.name}" />`;
+      hidden.innerHTML += `<input type="hidden" name="skill_needed[]" value="${s.type === 'needed' ? 1 : 0}" />`;
+    });
+  }
+
+  document.getElementById('skillText').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addSkill(this.value);
+      this.value = '';
+    }
+    if (e.key === 'Backspace' && !this.value && skills.length) {
+      removeSkill(skills.length - 1);
+    }
+  });
+  document.getElementById('skillText').addEventListener('blur', function() {
+    if (this.value.trim()) { addSkill(this.value); this.value = ''; }
+  });
+</script>
+{% endblock %}

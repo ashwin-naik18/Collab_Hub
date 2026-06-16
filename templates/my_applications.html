@@ -1,0 +1,1242 @@
+{% extends "base.html" %} {% block title %}My Applications — CollabHub{%
+endblock %} {% block extra_styles %}
+<style>
+  /* ═══════════════════════════════════════════════════
+     ANIMATIONS
+  ═══════════════════════════════════════════════════ */
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateX(-50%) translateY(0);
+    }
+    50% {
+      transform: translateX(-50%) translateY(-10px);
+    }
+  }
+  @keyframes glow {
+    0%,
+    100% {
+      box-shadow: 0 4px 16px rgba(244, 113, 58, 0.15);
+    }
+    50% {
+      box-shadow:
+        0 4px 24px rgba(244, 113, 58, 0.35),
+        0 0 30px rgba(255, 107, 157, 0.2);
+    }
+  }
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(0.7);
+      opacity: 0.5;
+    }
+  }
+  @keyframes shimmer {
+    0%,
+    100% {
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(1.25);
+    }
+  }
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     PAGE BANNER
+  ═══════════════════════════════════════════════════ */
+  .page-banner {
+    background: linear-gradient(
+      135deg,
+      rgba(254, 243, 231, 0.9) 0%,
+      rgba(224, 242, 254, 0.95) 50%,
+      rgba(253, 240, 235, 0.9) 100%
+    );
+    border-bottom: 1px solid var(--border);
+    padding: 52px 28px 44px;
+    position: relative;
+    overflow: hidden;
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+  }
+  [data-theme="dark"] .page-banner {
+    background: linear-gradient(
+      135deg,
+      rgba(45, 26, 16, 0.6) 0%,
+      rgba(30, 41, 59, 0.7) 50%,
+      rgba(26, 15, 30, 0.6) 100%
+    );
+  }
+  .page-banner::before {
+    content: "";
+    position: absolute;
+    top: -70px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 340px;
+    background: radial-gradient(
+      ellipse,
+      rgba(244, 113, 58, 0.18) 0%,
+      rgba(255, 107, 157, 0.12) 40%,
+      transparent 70%
+    );
+    pointer-events: none;
+    animation: float 14s ease-in-out infinite;
+  }
+  .page-banner::after {
+    content: "";
+    position: absolute;
+    top: 30%;
+    right: 6%;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(
+      circle,
+      rgba(99, 102, 241, 0.12) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    animation: float 18s ease-in-out infinite reverse;
+  }
+
+  .banner-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .banner-left {
+    text-align: left;
+  }
+
+  .banner-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: linear-gradient(
+      135deg,
+      rgba(254, 240, 235, 0.9) 0%,
+      rgba(253, 242, 248, 0.95) 100%
+    );
+    color: var(--accent);
+    border: 1px solid rgba(244, 113, 58, 0.3);
+    padding: 5px 14px;
+    border-radius: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    animation:
+      fadeUp 0.4s ease both,
+      glow 3s ease-in-out infinite;
+    box-shadow: 0 4px 16px rgba(244, 113, 58, 0.15);
+  }
+  [data-theme="dark"] .banner-eyebrow {
+    background: linear-gradient(
+      135deg,
+      rgba(45, 26, 16, 0.8) 0%,
+      rgba(46, 16, 101, 0.4) 100%
+    );
+  }
+  .banner-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f4713a, #ff6b9d);
+    box-shadow: 0 0 8px rgba(244, 113, 58, 0.6);
+    animation: pulse-dot 1.8s infinite;
+  }
+
+  .banner-title {
+    font-family: "Fraunces", serif;
+    font-size: clamp(26px, 4vw, 42px);
+    font-weight: 700;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #1c1917 0%, #f4713a 50%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    animation: fadeUp 0.4s 0.1s ease both;
+  }
+  [data-theme="dark"] .banner-title {
+    background: linear-gradient(135deg, #fafaf9 0%, #f4713a 50%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .banner-title em {
+    font-style: italic;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 50%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  .banner-sub {
+    font-size: 15px;
+    color: var(--ink3);
+    line-height: 1.7;
+    animation: fadeUp 0.4s 0.2s ease both;
+  }
+
+  /* Banner stats */
+  .banner-stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.4s 0.25s ease both;
+  }
+  .bstat {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 14px 20px;
+    text-align: center;
+    min-width: 90px;
+    transition: all var(--tr);
+  }
+  .bstat:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .bstat-n {
+    font-family: "Fraunces", serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .bstat-n.orange {
+    color: var(--accent);
+  }
+  .bstat-n.green {
+    color: var(--green);
+  }
+  .bstat-n.blue {
+    color: var(--blue);
+  }
+  .bstat-l {
+    font-size: 11px;
+    color: var(--ink3);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     MAIN LAYOUT
+  ═══════════════════════════════════════════════════ */
+  .dash-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 36px 28px 80px;
+  }
+
+  /* ── Tab bar ── */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 5px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.4s 0.15s ease both;
+    width: fit-content;
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+  }
+  .tab-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--ink3);
+    border: none;
+    background: none;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    white-space: nowrap;
+  }
+  .tab-item:hover {
+    color: var(--ink2);
+    background: var(--bg3);
+  }
+  .tab-item.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .tab-item .tab-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.25);
+  }
+  .tab-item:not(.active) .tab-badge {
+    background: var(--bg3);
+    color: var(--ink3);
+  }
+
+  /* ── Tab panels ── */
+  .tab-panel {
+    display: none;
+  }
+  .tab-panel.active {
+    display: block;
+    animation: fadeUp 0.3s ease;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     APPLICATION CARD — SENT
+  ═══════════════════════════════════════════════════ */
+  .app-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 26px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--tr);
+    position: relative;
+    overflow: hidden;
+  }
+  .app-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  /* Left accent bar */
+  .app-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 18px 0 0 18px;
+  }
+  .app-card.pending::before {
+    background: var(--amber);
+  }
+  .app-card.accepted::before {
+    background: var(--green);
+  }
+  .app-card.rejected::before {
+    background: #dc2626;
+  }
+
+  .app-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding-left: 12px;
+  }
+  .app-idea-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .app-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .app-idea-title {
+    font-family: "Fraunces", serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.25;
+    margin-bottom: 5px;
+  }
+  .app-idea-title a {
+    transition: color 0.15s;
+  }
+  .app-idea-title a:hover {
+    color: var(--accent);
+  }
+  .app-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--ink3);
+    flex-wrap: wrap;
+  }
+  .app-meta .dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--ink4);
+  }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    flex-shrink: 0;
+  }
+  .status-badge.pending {
+    background: var(--amber-soft);
+    color: var(--amber);
+    border: 1px solid rgba(217, 119, 6, 0.25);
+  }
+  .status-badge.accepted {
+    background: var(--green-soft);
+    color: var(--green);
+    border: 1px solid rgba(22, 163, 74, 0.25);
+  }
+  .status-badge.rejected {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+  }
+  [data-theme="dark"] .status-badge.rejected {
+    background: #3b0f0f;
+    color: #f87171;
+  }
+
+  /* Cover note */
+  .app-note {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 14px 16px;
+    margin: 0 0 14px 12px;
+    font-size: 14px;
+    color: var(--ink2);
+    line-height: 1.7;
+    position: relative;
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+  }
+  .app-note .note-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+
+  /* Skills offered */
+  .app-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 16px 12px;
+  }
+  .skill-chip {
+    font-size: 12px;
+    padding: 4px 11px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--ink2);
+    background: var(--bg);
+    font-weight: 500;
+  }
+
+  /* Footer actions */
+  .app-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 0 0 12px;
+    border-top: 1px solid var(--border);
+  }
+  .app-acts {
+    display: flex;
+    gap: 8px;
+  }
+  .abt {
+    padding: 7px 16px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: var(--bg2);
+    color: var(--ink2);
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .abt:hover {
+    border-color: var(--ink3);
+    color: var(--ink);
+  }
+  .abt.view {
+    background: var(--blue-soft);
+    border-color: rgba(37, 99, 235, 0.2);
+    color: var(--blue);
+  }
+  .abt.withdraw {
+    background: transparent;
+    border-color: rgba(220, 38, 38, 0.2);
+    color: #dc2626;
+  }
+  .abt.withdraw:hover {
+    background: #fee2e2;
+  }
+  .app-date {
+    font-size: 12px;
+    color: var(--ink3);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     RECEIVED APPLICATIONS CARD
+  ═══════════════════════════════════════════════════ */
+  .recv-idea-block {
+    margin-bottom: 32px;
+    animation: fadeUp 0.5s ease both;
+  }
+  .recv-idea-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 16px 20px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    cursor: pointer;
+    transition: all var(--tr);
+  }
+  .recv-idea-head:hover {
+    box-shadow: var(--shadow-sm);
+  }
+  .recv-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .recv-idea-info {
+    flex: 1;
+  }
+  .recv-idea-title {
+    font-family: "Fraunces", serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .recv-idea-meta {
+    font-size: 12px;
+    color: var(--ink3);
+  }
+  .recv-count {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid rgba(244, 113, 58, 0.2);
+    white-space: nowrap;
+  }
+
+  /* Applicant card */
+  .applicant-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 22px 24px;
+    margin-bottom: 12px;
+    margin-left: 20px;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--tr);
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.3s ease both;
+  }
+  .applicant-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--border);
+    border-radius: 18px 0 0 18px;
+    transition: background var(--tr);
+  }
+  .applicant-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+  .applicant-card:hover::before {
+    background: var(--accent);
+  }
+
+  .appl-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .appl-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--accent-soft);
+    border: 2px solid rgba(244, 113, 58, 0.2);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .appl-info {
+    flex: 1;
+  }
+  .appl-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .appl-meta {
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 2px;
+  }
+
+  .appl-note {
+    font-size: 14px;
+    color: var(--ink2);
+    line-height: 1.65;
+    margin-bottom: 12px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+  }
+  .appl-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .appl-skill {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    color: var(--ink2);
+    font-weight: 500;
+  }
+
+  .appl-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .appl-acts {
+    display: flex;
+    gap: 8px;
+  }
+
+  .act-btn {
+    padding: 7px 16px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .act-accept {
+    background: var(--green-soft);
+    border-color: rgba(22, 163, 74, 0.3);
+    color: var(--green);
+  }
+  .act-accept:hover {
+    background: var(--green);
+    color: #fff;
+    border-color: var(--green);
+    transform: translateY(-1px);
+  }
+  .act-reject {
+    background: transparent;
+    border-color: rgba(220, 38, 38, 0.25);
+    color: #dc2626;
+  }
+  .act-reject:hover {
+    background: #fee2e2;
+    border-color: #dc2626;
+  }
+  .act-view {
+    background: var(--blue-soft);
+    border-color: rgba(37, 99, 235, 0.2);
+    color: var(--blue);
+  }
+  .act-view:hover {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+  }
+
+  .appl-date {
+    font-size: 12px;
+    color: var(--ink3);
+  }
+
+  /* Already accepted/rejected state */
+  .applicant-card.accepted::before {
+    background: var(--green) !important;
+  }
+  .applicant-card.rejected::before {
+    background: #dc2626 !important;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     EMPTY STATE
+  ═══════════════════════════════════════════════════ */
+  .empty-state {
+    text-align: center;
+    padding: 64px 24px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    animation: fadeUp 0.5s ease both;
+  }
+  .empty-icon {
+    font-size: 52px;
+    margin-bottom: 16px;
+  }
+  .empty-title {
+    font-family: "Fraunces", serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .empty-sub {
+    font-size: 15px;
+    color: var(--ink3);
+    margin-bottom: 22px;
+    line-height: 1.6;
+  }
+  .empty-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #f4713a, #ff6b9d);
+    color: #fff;
+    border: none;
+    border-radius: var(--r);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    box-shadow: 0 4px 14px rgba(244, 113, 58, 0.3);
+    text-decoration: none;
+  }
+  .empty-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(244, 113, 58, 0.4);
+  }
+
+  @media (max-width: 768px) {
+    .banner-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .banner-stats {
+      width: 100%;
+    }
+    .bstat {
+      flex: 1;
+      min-width: 70px;
+    }
+    .applicant-card {
+      margin-left: 0;
+    }
+    .tab-bar {
+      width: 100%;
+      overflow-x: auto;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+
+<!-- ══ BANNER ══ -->
+<div class="page-banner">
+  <div class="banner-inner">
+    <div class="banner-left">
+      <div class="banner-eyebrow">
+        <span class="banner-dot"></span> Your journey
+      </div>
+      <h1 class="banner-title">My <em>Applications</em> ✦</h1>
+      <p class="banner-sub">
+        Track ideas you've applied to and manage requests on your own ideas.
+      </p>
+    </div>
+    <div class="banner-stats">
+      <div class="bstat">
+        <div class="bstat-n orange">{{ sent_applications | length }}</div>
+        <div class="bstat-l">Applied to</div>
+      </div>
+      <div class="bstat">
+        <div class="bstat-n green">
+          {{ sent_applications | selectattr('status','equalto','accepted') |
+          list | length }}
+        </div>
+        <div class="bstat-l">Accepted</div>
+      </div>
+      <div class="bstat">
+        <div class="bstat-n blue">{{ my_ideas | length }}</div>
+        <div class="bstat-l">My ideas</div>
+      </div>
+      <div class="bstat">
+        <div class="bstat-n" style="color: var(--amber)">
+          {{ received_applications | length }}
+        </div>
+        <div class="bstat-l">Received</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div class="dash-wrap">
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <button class="tab-item active" onclick="switchTab('sent', this)">
+      🚀 Applications Sent
+      <span class="tab-badge">{{ sent_applications | length }}</span>
+    </button>
+    <button class="tab-item" onclick="switchTab('received', this)">
+      📥 Applications Received
+      <span class="tab-badge">{{ received_applications | length }}</span>
+    </button>
+    <button class="tab-item" onclick="switchTab('ideas', this)">
+      💡 My Ideas
+      <span class="tab-badge">{{ my_ideas | length }}</span>
+    </button>
+  </div>
+
+  <!-- ═══════════ TAB 1: SENT ═══════════ -->
+  <div class="tab-panel active" id="panel-sent">
+    {% if sent_applications %} {% set cat_icons =
+    {'AI/ML':'🤖','HealthTech':'💊','FinTech':'💰','CleanTech':'🌱','EdTech':'🎓','Other':'💡'}
+    %} {% for app in sent_applications %}
+    <div class="app-card {{ app.status }}">
+      <div class="app-head">
+        <div class="app-idea-icon">{{ cat_icons.get(app.category, '💡') }}</div>
+        <div class="app-info">
+          <div class="app-idea-title">
+            <a href="{{ url_for('idea_detail', idea_id=app.idea_id) }}"
+              >{{ app.title }}</a
+            >
+          </div>
+          <div class="app-meta">
+            <span>by {{ app.founder_name }}</span>
+            <span class="dot"></span>
+            <span>{{ app.category }}</span>
+            <span class="dot"></span>
+            <span>{{ app.idea_stage }}</span>
+          </div>
+        </div>
+        <span class="status-badge {{ app.status }}">
+          {% if app.status == 'pending' %}⏳ Pending {% elif app.status ==
+          'accepted' %}✓ Accepted {% else %}✕ Not selected{% endif %}
+        </span>
+      </div>
+
+      {% if app.skills_offered %}
+      <div class="app-skills">
+        {% for skill in app.skills_offered.split(',') %}
+        <span class="skill-chip">{{ skill.strip() }}</span>
+        {% endfor %}
+      </div>
+      {% endif %} {% if app.cover_note %}
+      <div class="app-note">
+        <div class="note-label">Your message</div>
+        {{ app.cover_note }}
+      </div>
+      {% endif %}
+
+      <div class="app-foot">
+        <div class="app-acts">
+          <a
+            href="{{ url_for('idea_detail', idea_id=app.idea_id) }}"
+            class="abt view"
+          >
+            View idea →
+          </a>
+          {% if app.status == 'pending' %}
+          <form
+            method="POST"
+            action="{{ url_for('withdraw_application', application_id=app.application_id) }}"
+            style="display: inline"
+            onsubmit="return confirm('Withdraw this application?');"
+          >
+            
+            <button class="abt withdraw">✕ Withdraw</button>
+          </form>
+          {% endif %}
+        </div>
+        <span class="app-date">Applied {{ app.time_ago }}</span>
+      </div>
+    </div>
+    {% endfor %} {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🚀</div>
+      <div class="empty-title">No applications yet</div>
+      <p class="empty-sub">
+        You haven't applied to any ideas yet.<br />
+        Find ideas that match your skills and start collaborating!
+      </p>
+      <a href="{{ url_for('index') }}" class="empty-btn">✦ Browse ideas</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ═══════════ TAB 2: RECEIVED ═══════════ -->
+  <div class="tab-panel" id="panel-received">
+    {% if received_applications %} {# Group by idea #} {% set seen_ideas = [] %}
+    {% for idea in my_ideas %} {% set idea_apps = received_applications |
+    selectattr('idea_id', 'equalto', idea.idea_id) | list %} {% if idea_apps %}
+    <div class="recv-idea-block">
+      <div class="recv-idea-head">
+        {% set cat_icons =
+        {'AI/ML':'🤖','HealthTech':'💊','FinTech':'💰','CleanTech':'🌱','EdTech':'🎓','Other':'💡'}
+        %}
+        <div class="recv-icon">{{ cat_icons.get(idea.category, '💡') }}</div>
+        <div class="recv-idea-info">
+          <div class="recv-idea-title">{{ idea.title }}</div>
+          <div class="recv-idea-meta">
+            {{ idea.category }} · {{ idea.stage }} · {{ idea.slots_open }}
+            spot{{ 's' if idea.slots_open != 1 }} open
+          </div>
+        </div>
+        <span class="recv-count"
+          >{{ idea_apps | length }} applicant{{ 's' if idea_apps | length != 1
+          }}</span
+        >
+      </div>
+
+      {% for app in idea_apps %}
+      <div class="applicant-card {{ app.status }}">
+        <div class="appl-head">
+          <div class="appl-avatar">{{ app.full_name[0].upper() }}</div>
+          <div class="appl-info">
+            <div class="appl-name">{{ app.full_name }}</div>
+            <div class="appl-meta">
+              📍 {{ app.city or 'India' }} · Applied {{ app.time_ago }}
+            </div>
+          </div>
+          <span class="status-badge {{ app.status }}">
+            {% if app.status == 'pending' %}⏳ Pending {% elif app.status ==
+            'accepted' %}✓ Accepted {% else %}✕ Rejected{% endif %}
+          </span>
+        </div>
+
+        {% if app.skills_offered %}
+        <div class="appl-skills">
+          {% for skill in app.skills_offered.split(',') %}
+          <span class="appl-skill">{{ skill.strip() }}</span>
+          {% endfor %}
+        </div>
+        {% endif %} {% if app.cover_note %}
+        <div class="appl-note">{{ app.cover_note }}</div>
+        {% endif %}
+
+        <div class="appl-foot">
+          <div class="appl-acts">
+            {% if app.status == 'pending' %}
+            <form
+              method="POST"
+              action="{{ url_for('accept_application', application_id=app.application_id) }}"
+              style="display: inline"
+            >
+              
+              <button class="act-btn act-accept">✓ Accept</button>
+            </form>
+            <form
+              method="POST"
+              action="{{ url_for('reject_application', application_id=app.application_id) }}"
+              style="display: inline"
+              onsubmit="return confirm('Reject this application?');"
+            >
+              
+              <button class="act-btn act-reject">✕ Reject</button>
+            </form>
+            {% elif app.status == 'accepted' %}
+            <span
+              class="act-btn"
+              style="
+                background: var(--green-soft);
+                color: var(--green);
+                border-color: rgba(22, 163, 74, 0.3);
+                cursor: default;
+              "
+            >
+              ✓ Team member
+            </span>
+            {% else %}
+            <span
+              class="act-btn"
+              style="
+                background: #fee2e2;
+                color: #dc2626;
+                border-color: rgba(220, 38, 38, 0.2);
+                cursor: default;
+              "
+            >
+              ✕ Rejected
+            </span>
+            {% endif %}
+          </div>
+          <span class="appl-date">{{ app.time_ago }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endfor %} {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📥</div>
+      <div class="empty-title">No applications received yet</div>
+      <p class="empty-sub">
+        When people apply to your ideas, they'll show up here.<br />
+        Post a great idea and watch the applications roll in!
+      </p>
+      <a href="{{ url_for('post_idea') }}" class="empty-btn">✦ Post an idea</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ═══════════ TAB 3: MY IDEAS ═══════════ -->
+  <div class="tab-panel" id="panel-ideas">
+    {% if my_ideas %} {% set cat_icons =
+    {'AI/ML':'🤖','HealthTech':'💊','FinTech':'💰','CleanTech':'🌱','EdTech':'🎓','Other':'💡'}
+    %} {% for idea in my_ideas %}
+    <div class="app-card" style="padding-left: 30px">
+      <div class="app-head">
+        <div class="app-idea-icon">
+          {{ cat_icons.get(idea.category, '💡') }}
+        </div>
+        <div class="app-info">
+          <div class="app-idea-title">
+            <a href="{{ url_for('idea_detail', idea_id=idea.idea_id) }}"
+              >{{ idea.title }}</a
+            >
+          </div>
+          <div class="app-meta">
+            <span>{{ idea.category }}</span>
+            <span class="dot"></span>
+            <span>{{ idea.stage }}</span>
+            <span class="dot"></span>
+            <span
+              >{{ idea.slots_open }} spot{{ 's' if idea.slots_open != 1 }}
+              open</span
+            >
+            <span class="dot"></span>
+            <span>{{ idea.time_ago }}</span>
+          </div>
+        </div>
+        {% if idea.is_active %}
+        <span class="status-badge accepted">✓ Active</span>
+        {% else %}
+        <span
+          class="status-badge"
+          style="
+            background: var(--bg3);
+            color: var(--ink3);
+            border-color: var(--border);
+          "
+          >⏸ Paused</span
+        >
+        {% endif %}
+      </div>
+
+      <!-- Quick stats -->
+      <div
+        style="display: flex; gap: 16px; margin: 0 0 14px 0; flex-wrap: wrap"
+      >
+        <span
+          style="
+            font-size: 13px;
+            color: var(--ink3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          "
+        >
+          👁 <strong style="color: var(--ink)">{{ idea.views }}</strong> views
+        </span>
+        <span
+          style="
+            font-size: 13px;
+            color: var(--ink3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          "
+        >
+          🙋
+          <strong style="color: var(--ink)"
+            >{{ idea.application_count }}</strong
+          >
+          applied
+        </span>
+        <span
+          style="
+            font-size: 13px;
+            color: var(--ink3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          "
+        >
+          💬
+          <strong style="color: var(--ink)">{{ idea.comment_count }}</strong>
+          comments
+        </span>
+      </div>
+
+      <div class="app-foot">
+        <div class="app-acts">
+          <a
+            href="{{ url_for('idea_detail', idea_id=idea.idea_id) }}"
+            class="abt view"
+            >View →</a
+          >
+          <a
+            href="{{ url_for('edit_idea', idea_id=idea.idea_id) }}"
+            style="
+              background: var(--blue-soft);
+              border-color: rgba(37, 99, 235, 0.2);
+              color: var(--blue);
+            "
+            class="abt"
+            >✏ Edit</a
+          >
+          <form
+            method="POST"
+            action="{{ url_for('delete_idea', idea_id=idea.idea_id) }}"
+            style="display: inline"
+            onsubmit="return confirm('Delete this idea permanently?');"
+          >
+            
+            <button class="abt withdraw">🗑 Delete</button>
+          </form>
+        </div>
+        <span class="app-date">Posted {{ idea.time_ago }}</span>
+      </div>
+    </div>
+    {% endfor %} {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">💡</div>
+      <div class="empty-title">No ideas posted yet</div>
+      <p class="empty-sub">
+        Share your startup idea with thousands of builders.<br />
+        It only takes 2 minutes to post!
+      </p>
+      <a href="{{ url_for('post_idea') }}" class="empty-btn"
+        >✦ Post your first idea</a
+      >
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %} {% block extra_scripts %}
+<script>
+  function switchTab(name, el) {
+    // Toggle tab buttons
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    // Toggle panels
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  // Auto-switch to received tab if there are unread applications (optional enhancement)
+  {% if received_applications | selectattr('status','equalto','pending') | list | length > 0 %}
+  // Uncomment to auto-open received tab when there are pending applications:
+  // document.querySelector('[onclick*="received"]').click();
+  {% endif %}
+</script>
+{% endblock %}

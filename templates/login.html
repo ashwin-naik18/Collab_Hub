@@ -1,0 +1,626 @@
+{% extends "base.html" %} {% block title %}Login — CollabHub{% endblock %} {%
+block extra_styles %}
+<style>
+
+
+  .login-page {
+    min-height: calc(100vh - 132px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-page::before,
+  .login-page::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.18;
+    pointer-events: none;
+  }
+
+  .login-page::before {
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle, #ff6b9d 0%, #f4713a 100%);
+    top: -140px;
+    left: -120px;
+    animation: floatOrb 14s ease-in-out infinite;
+  }
+
+  .login-page::after {
+    width: 360px;
+    height: 360px;
+    background: radial-gradient(circle, #6366f1 0%, #3b82f6 100%);
+    bottom: -120px;
+    right: -100px;
+    animation: floatOrb 18s ease-in-out infinite reverse;
+  }
+
+  @keyframes floatOrb {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(30px);
+    }
+  }
+
+  .login-wrapper {
+    width: 100%;
+    max-width: 1180px;
+    display: grid;
+    grid-template-columns: 1fr 480px;
+    gap: 34px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ═══════════════════════════════════
+     LEFT SECTION
+  ═══════════════════════════════════ */
+
+  .login-left {
+    padding-right: 20px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 40px;
+    background: linear-gradient(
+      135deg,
+      rgba(244, 113, 58, 0.12),
+      rgba(99, 102, 241, 0.12)
+    );
+    border: 1px solid rgba(244, 113, 58, 0.25);
+    margin-bottom: 22px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-solid);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+  }
+
+  .eyebrow .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    animation: pulseDot 1.5s infinite;
+  }
+
+  @keyframes pulseDot {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.4);
+    }
+  }
+
+  .login-title {
+    font-family: "Fraunces", serif;
+    font-size: clamp(46px, 6vw, 72px);
+    line-height: 1.02;
+    margin-bottom: 22px;
+    letter-spacing: -2px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #1c1917 0%, #f4713a 45%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  [data-theme="dark"] .login-title {
+    background: linear-gradient(135deg, #fafaf9 0%, #f4713a 45%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .login-sub {
+    max-width: 540px;
+    font-size: 17px;
+    line-height: 1.8;
+    color: var(--ink2);
+    margin-bottom: 34px;
+  }
+
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(12px);
+    transition: all var(--tr);
+  }
+
+  [data-theme="dark"] .feature {
+    background: rgba(26, 25, 22, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .feature:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .feature-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: linear-gradient(
+      135deg,
+      rgba(244, 113, 58, 0.15),
+      rgba(99, 102, 241, 0.15)
+    );
+    flex-shrink: 0;
+  }
+
+  .feature h3 {
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+
+  .feature p {
+    font-size: 14px;
+    color: var(--ink3);
+    line-height: 1.6;
+  }
+
+  /* ═══════════════════════════════════
+     LOGIN CARD
+  ═══════════════════════════════════ */
+
+  .login-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 32px;
+    padding: 42px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.88) 0%,
+      rgba(254, 245, 240, 0.94) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(18px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  [data-theme="dark"] .login-card {
+    background: linear-gradient(
+      135deg,
+      rgba(26, 25, 22, 0.92) 0%,
+      rgba(45, 26, 16, 0.9) 100%
+    );
+  }
+
+  .login-card::before {
+    content: "";
+    position: absolute;
+    top: -120px;
+    right: -80px;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(
+      circle,
+      rgba(244, 113, 58, 0.22),
+      transparent 70%
+    );
+    border-radius: 50%;
+  }
+
+  .login-card::after {
+    content: "";
+    position: absolute;
+    bottom: -90px;
+    left: -70px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(
+      circle,
+      rgba(99, 102, 241, 0.18),
+      transparent 70%
+    );
+    border-radius: 50%;
+  }
+
+  .card-top {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .card-top h2 {
+    font-family: "Fraunces", serif;
+    font-size: 38px;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+
+  .card-top p {
+    color: var(--ink3);
+    font-size: 15px;
+  }
+
+  .form-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 20px;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .input-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink2);
+  }
+
+  .input-wrap {
+    position: relative;
+  }
+
+  .input-wrap span {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    opacity: 0.7;
+  }
+
+  .input-group input {
+    width: 100%;
+    padding: 15px 16px 15px 48px;
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--ink);
+    font-size: 14px;
+    outline: none;
+    transition: all var(--tr);
+  }
+
+  [data-theme="dark"] .input-group input {
+    background: rgba(26, 25, 22, 0.75);
+  }
+
+  .input-group input:focus {
+    border-color: var(--accent-solid);
+    box-shadow:
+      0 0 0 4px rgba(244, 113, 58, 0.12),
+      0 8px 20px rgba(244, 113, 58, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .login-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: -4px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink2);
+  }
+
+  .remember input {
+    accent-color: #f4713a;
+  }
+
+  .forgot-link {
+    font-size: 13px;
+    color: var(--accent-solid);
+    font-weight: 600;
+    transition: all var(--tr);
+  }
+
+  .forgot-link:hover {
+    opacity: 0.8;
+  }
+
+  .login-btn {
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    padding: 16px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 55%, #6366f1 100%);
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all var(--tr);
+    margin-top: 6px;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 10px 30px rgba(244, 113, 58, 0.3),
+      0 0 25px rgba(255, 107, 157, 0.15);
+  }
+
+  .login-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.25),
+      rgba(255, 255, 255, 0)
+    );
+    opacity: 0;
+    transition: opacity var(--tr);
+  }
+
+  .login-btn:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 14px 40px rgba(244, 113, 58, 0.38),
+      0 0 40px rgba(255, 107, 157, 0.28);
+  }
+
+  .login-btn:hover::before {
+    opacity: 1;
+  }
+
+  .divider {
+    position: relative;
+    text-align: center;
+    margin: 26px 0;
+  }
+
+  .divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .divider span {
+    position: relative;
+    background: var(--bg2);
+    padding: 0 14px;
+    color: var(--ink3);
+    font-size: 12px;
+  }
+
+  .social-login {
+    display: grid;
+    gap: 12px;
+  }
+
+  .social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--ink2);
+    font-size: 14px;
+    font-weight: 600;
+    transition: all var(--tr);
+  }
+
+  [data-theme="dark"] .social-btn {
+    background: rgba(26, 25, 22, 0.72);
+  }
+
+  .social-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-solid);
+    box-shadow: 0 8px 20px rgba(244, 113, 58, 0.12);
+  }
+
+  .bottom-text {
+    text-align: center;
+    margin-top: 28px;
+    color: var(--ink3);
+    font-size: 14px;
+  }
+
+  .bottom-text a {
+    color: var(--accent-solid);
+    font-weight: 700;
+  }
+
+  /* ═══════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════ */
+
+  @media (max-width: 980px) {
+    .login-wrapper {
+      grid-template-columns: 1fr;
+      max-width: 560px;
+    }
+
+    .login-left {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .login-card {
+      padding: 28px;
+      border-radius: 24px;
+    }
+
+    .card-top h2 {
+      font-size: 30px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+
+<section class="login-page">
+  <div class="login-wrapper">
+    <!-- LEFT -->
+    <div class="login-left">
+      <div class="eyebrow">
+        <span class="dot"></span>
+        Startup builders network
+      </div>
+
+      <h1 class="login-title">
+        Build the next<br />
+        big thing with<br />
+        the right people.
+      </h1>
+
+      <p class="login-sub">
+        Join ambitious founders, developers, designers, and investors building
+        startups together on CollabHub.
+      </p>
+
+      <div class="feature-list">
+        <div class="feature">
+          <div class="feature-icon">🚀</div>
+          <div>
+            <h3>Launch ideas faster</h3>
+            <p>
+              Find teammates who match your vision and start building
+              immediately.
+            </p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">🤝</div>
+          <div>
+            <h3>Connect with real builders</h3>
+            <p>
+              Collaborate with passionate people across AI, fintech, healthtech
+              and more.
+            </p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">💡</div>
+          <div>
+            <h3>Get noticed by investors</h3>
+            <p>
+              Showcase your startup publicly and attract investors organically.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGIN CARD -->
+    <div class="login-card">
+      <div class="card-top">
+        <h2>Welcome back 👋</h2>
+        <p>Login and continue building your startup journey.</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="form-grid">
+          <div class="input-group">
+            <label>Email Address</label>
+
+            <div class="input-wrap">
+              <span>📧</span>
+
+              <input
+                type="email"
+                name="email"
+                placeholder="example@gmail.com"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Password</label>
+
+            <div class="input-wrap">
+              <span>🔒</span>
+
+              <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="login-options">
+            <label class="remember">
+              <input type="checkbox" name="remember" />
+              Remember me
+            </label>
+
+            <a href="#" class="forgot-link"> Forgot password? </a>
+          </div>
+
+          <button type="submit" class="login-btn">Login to CollabHub ✦</button>
+        </div>
+      </form>
+
+      <div class="divider">
+        <span>OR CONTINUE WITH</span>
+      </div>
+
+      <div class="social-login">
+        <button class="social-btn" type="button">
+          <span>🌐</span>
+          Continue with Google
+        </button>
+
+        <button class="social-btn" type="button">
+          <span>📱</span>
+          Continue with Phone OTP
+        </button>
+      </div>
+
+      <div class="bottom-text">
+        Don’t have an account?
+        <a href="{{ url_for('register') }}"> Join free </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

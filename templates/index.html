@@ -1,0 +1,1291 @@
+{% extends "base.html" %} {% block title %}Explore Ideas — CollabHub{% endblock
+%} {% block extra_styles %}
+<style>
+  /* ═══════════════════════════════════
+     HERO - ENHANCED
+  ═══════════════════════════════════ */
+  .hero {
+    background: linear-gradient(135deg, rgba(254, 243, 231, 0.9) 0%, rgba(224, 242, 254, 0.95) 50%, rgba(253, 240, 235, 0.9) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 72px 28px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+  }
+  
+  [data-theme="dark"] .hero {
+    background: linear-gradient(135deg, rgba(45, 26, 16, 0.6) 0%, rgba(30, 41, 59, 0.7) 50%, rgba(26, 15, 30, 0.6) 100%);
+  }
+
+  /* Decorative background blobs - Enhanced */
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 400px;
+    background: radial-gradient(
+      ellipse,
+      rgba(244, 113, 58, 0.2) 0%,
+      rgba(255, 107, 157, 0.15) 40%,
+      transparent 70%
+    );
+    pointer-events: none;
+    animation: float 15s ease-in-out infinite;
+  }
+  [data-theme="dark"] .hero::before {
+    background: radial-gradient(
+      ellipse,
+      rgba(244, 113, 58, 0.25) 0%,
+      rgba(255, 107, 157, 0.2) 40%,
+      transparent 70%
+    );
+  }
+  
+  .hero::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(
+      circle,
+      rgba(99, 102, 241, 0.15) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    animation: float 20s ease-in-out infinite reverse;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: linear-gradient(135deg, rgba(254, 240, 235, 0.9) 0%, rgba(253, 242, 248, 0.95) 100%);
+    color: var(--accent-solid);
+    border: 1px solid rgba(244, 113, 58, 0.3);
+    padding: 5px 14px;
+    border-radius: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+    animation: fadeUp 0.5s ease, glow 3s ease-in-out infinite;
+    box-shadow: 0 4px 16px rgba(244, 113, 58, 0.15);
+  }
+  
+  [data-theme="dark"] .hero-eyebrow {
+    background: linear-gradient(135deg, rgba(45, 26, 16, 0.8) 0%, rgba(46, 16, 101, 0.4) 100%);
+  }
+  
+  @keyframes glow {
+    0%, 100% {
+      box-shadow: 0 4px 16px rgba(244, 113, 58, 0.15);
+    }
+    50% {
+      box-shadow: 0 4px 24px rgba(244, 113, 58, 0.3), 0 0 30px rgba(255, 107, 157, 0.2);
+    }
+  }
+  
+  .hero-eyebrow .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    animation: pulse-dot 1.8s infinite, rotate-hue 3s linear infinite;
+    box-shadow: 0 0 8px rgba(244, 113, 58, 0.6);
+  }
+  
+  @keyframes rotate-hue {
+    0% {
+      filter: hue-rotate(0deg);
+    }
+    100% {
+      filter: hue-rotate(360deg);
+    }
+  }
+
+  .hero h1 {
+    font-family: "Fraunces", serif;
+    font-size: clamp(38px, 5.5vw, 62px);
+    font-weight: 700;
+    line-height: 1.12;
+    background: linear-gradient(135deg, #1c1917 0%, #f4713a 50%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    max-width: 640px;
+    margin: 0 auto 18px;
+    animation: fadeUp 0.5s 0.1s ease both;
+    filter: drop-shadow(0 2px 4px rgba(244, 113, 58, 0.1));
+  }
+  
+  [data-theme="dark"] .hero h1 {
+    background: linear-gradient(135deg, #fafaf9 0%, #f4713a 50%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .hero h1 em {
+    font-style: italic;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 50%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  
+  @keyframes shimmer {
+    0%, 100% {
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(1.2);
+    }
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    color: var(--ink2);
+    max-width: 440px;
+    margin: 0 auto 32px;
+    font-weight: 400;
+    line-height: 1.7;
+    animation: fadeUp 0.5s 0.2s ease both;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.5s 0.3s ease both;
+  }
+  .hbtn {
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: var(--r);
+    cursor: pointer;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    border: 1.5px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hbtn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
+    opacity: 0;
+    transition: opacity var(--tr);
+  }
+  .hbtn:hover::before {
+    opacity: 1;
+  }
+  .hbtn-fill {
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 16px rgba(244, 113, 58, 0.3);
+  }
+  .hbtn-fill:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(244, 113, 58, 0.4), 0 0 40px rgba(255, 107, 157, 0.3);
+  }
+  .hbtn-outline {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    border-color: var(--border);
+    color: var(--ink2);
+  }
+  [data-theme="dark"] .hbtn-outline {
+    background: rgba(26, 25, 22, 0.5);
+  }
+  .hbtn-outline:hover {
+    border-color: var(--accent-solid);
+    color: var(--ink);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(244, 113, 58, 0.2);
+  }
+
+  /* Stats row - Enhanced */
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-top: 52px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.5s 0.4s ease both;
+  }
+  .hs {
+    text-align: center;
+    padding: 0 36px;
+    border-right: 1px solid var(--border);
+    transition: all var(--tr);
+    position: relative;
+  }
+  .hs::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(244, 113, 58, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
+    opacity: 0;
+    transition: opacity var(--tr);
+    border-radius: var(--r-sm);
+  }
+  .hs:hover::before {
+    opacity: 1;
+  }
+  .hs:last-child {
+    border-right: none;
+  }
+  .hs-n {
+    font-family: "Fraunces", serif;
+    font-size: 30px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+  .hs-l {
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ═══════════════════════════════════
+     MAIN LAYOUT
+  ═══════════════════════════════════ */
+  .layout {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 32px 28px 80px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* ═══════════════════════════════════
+     SIDEBAR - ENHANCED
+  ═══════════════════════════════════ */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: sticky;
+    top: 80px;
+  }
+
+  .sbox {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(254, 245, 240, 0.95) 100%);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 18px;
+    transition:
+      background var(--tr),
+      border-color var(--tr),
+      box-shadow var(--tr);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  .sbox:hover {
+    box-shadow: 0 4px 16px rgba(244, 113, 58, 0.1);
+  }
+  [data-theme="dark"] .sbox {
+    background: linear-gradient(135deg, rgba(26, 25, 22, 0.9) 0%, rgba(45, 26, 16, 0.85) 100%);
+  }
+  
+  .sbox-label {
+    font-size: 11px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f4713a 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  .fi {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink2);
+    cursor: pointer;
+    transition: all var(--tr);
+    position: relative;
+    overflow: hidden;
+  }
+  .fi::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    transform: scaleY(0);
+    transition: transform var(--tr);
+  }
+  .fi:hover {
+    background: linear-gradient(135deg, rgba(244, 113, 58, 0.08) 0%, rgba(99, 102, 241, 0.05) 100%);
+    color: var(--ink);
+    transform: translateX(2px);
+  }
+  .fi:hover::before {
+    transform: scaleY(1);
+  }
+  .fi.on {
+    background: linear-gradient(135deg, rgba(244, 113, 58, 0.12) 0%, rgba(255, 107, 157, 0.08) 100%);
+    color: var(--accent-solid);
+    font-weight: 600;
+  }
+  .fi.on::before {
+    transform: scaleY(1);
+  }
+  .fi-n {
+    font-size: 12px;
+    color: var(--ink3);
+    background: var(--bg3);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    transition: all var(--tr);
+  }
+  .fi.on .fi-n {
+    background: linear-gradient(135deg, rgba(244, 113, 58, 0.2) 0%, rgba(255, 107, 157, 0.15) 100%);
+    color: var(--accent-solid);
+  }
+
+  .skill-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    font-size: 12px;
+    padding: 4px 11px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--ink2);
+    background: var(--bg2);
+    cursor: pointer;
+    transition: all var(--tr);
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+  }
+  .chip::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--green-gradient);
+    opacity: 0;
+    transition: opacity var(--tr);
+  }
+  .chip:hover,
+  .chip.on {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    border-color: rgba(22, 163, 74, 0.35);
+    color: var(--green);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+  }
+
+  .post-cta {
+    width: 100%;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    color: #fff;
+    border: none;
+    padding: 13px;
+    border-radius: var(--r);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    display: block;
+    text-align: center;
+    letter-spacing: 0.2px;
+    box-shadow: 0 4px 16px rgba(244, 113, 58, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .post-cta::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+    opacity: 0;
+    transition: opacity var(--tr);
+  }
+  .post-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(244, 113, 58, 0.4), 0 0 30px rgba(255, 107, 157, 0.3);
+  }
+  .post-cta:hover::before {
+    opacity: 1;
+  }
+
+  /* ═══════════════════════════════════
+     FEED - ENHANCED
+  ═══════════════════════════════════ */
+  .search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .search-bar input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    color: var(--ink);
+    font-size: 14px;
+    outline: none;
+    transition: all var(--tr);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  [data-theme="dark"] .search-bar input {
+    background: rgba(26, 25, 22, 0.8);
+  }
+  .search-bar input:focus {
+    border-color: var(--accent-solid);
+    box-shadow: 0 4px 16px rgba(244, 113, 58, 0.15), 0 0 0 3px rgba(244, 113, 58, 0.1);
+    transform: translateY(-1px);
+  }
+  .search-bar input::placeholder {
+    color: var(--ink3);
+  }
+  .search-bar button {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    color: #fff;
+    border: none;
+    border-radius: var(--r);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--tr);
+    box-shadow: 0 4px 12px rgba(244, 113, 58, 0.25);
+  }
+  .search-bar button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(244, 113, 58, 0.35);
+  }
+
+  .feed-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(254, 245, 240, 0.95) 100%);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 4px;
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  [data-theme="dark"] .tabs {
+    background: linear-gradient(135deg, rgba(26, 25, 22, 0.9) 0%, rgba(45, 26, 16, 0.85) 100%);
+  }
+  .tab {
+    padding: 7px 16px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--ink3);
+    border: none;
+    background: none;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    position: relative;
+  }
+  .tab:hover {
+    color: var(--ink2);
+    transform: translateY(-1px);
+  }
+  .tab.on {
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(244, 113, 58, 0.3);
+  }
+
+  /* ═══════════════════════════════════
+     IDEA CARD - ENHANCED
+  ═══════════════════════════════════ */
+  .card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(254, 245, 240, 0.9) 100%);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 24px 26px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition:
+      box-shadow var(--tr),
+      transform var(--tr),
+      background var(--tr),
+      border-color var(--tr);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  [data-theme="dark"] .card {
+    background: linear-gradient(135deg, rgba(26, 25, 22, 0.95) 0%, rgba(45, 26, 16, 0.85) 100%);
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f4713a 0%, #ff6b9d 50%, #6366f1 100%);
+    opacity: 0;
+    transition: opacity var(--tr);
+  }
+  .card::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(244, 113, 58, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity var(--tr);
+    pointer-events: none;
+  }
+  .card:hover {
+    box-shadow: var(--shadow-md), 0 0 40px rgba(244, 113, 58, 0.1);
+    transform: translateY(-4px);
+    border-color: rgba(244, 113, 58, 0.3);
+  }
+  .card:hover::before {
+    opacity: 1;
+  }
+  .card:hover::after {
+    opacity: 1;
+  }
+
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+  }
+  .c-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(244, 113, 58, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(244, 113, 58, 0.1);
+    transition: all var(--tr);
+  }
+  .card:hover .c-avatar {
+    transform: scale(1.05) rotate(5deg);
+    box-shadow: 0 4px 16px rgba(244, 113, 58, 0.2);
+  }
+  .c-info {
+    flex: 1;
+  }
+  .c-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .c-meta {
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 2px;
+  }
+  .c-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .ctag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 5px;
+    letter-spacing: 0.2px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: all var(--tr);
+  }
+  .ctag:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+  .ctag-o {
+    background: linear-gradient(135deg, #fdf0eb 0%, #fce4ec 100%);
+    color: var(--accent-solid);
+  }
+  .ctag-g {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: var(--green);
+  }
+  .ctag-b {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: var(--blue);
+  }
+  .ctag-gr {
+    background: var(--bg3);
+    color: var(--ink3);
+  }
+
+  .card-title {
+    font-family: "Fraunces", serif;
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 9px;
+    color: var(--ink);
+    position: relative;
+    z-index: 1;
+  }
+  .card-title a {
+    transition: all 0.15s;
+    background: linear-gradient(135deg, var(--ink) 0%, var(--ink) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% 200%;
+  }
+  .card-title a:hover {
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 50%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-position: 100% 0;
+  }
+
+  .card-desc {
+    font-size: 14px;
+    color: var(--ink2);
+    line-height: 1.7;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Team slots - Enhanced */
+  .team-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: var(--ink3);
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .t-slot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px dashed var(--ink4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--ink3);
+    transition: all var(--tr);
+    background: rgba(255, 255, 255, 0.5);
+  }
+  [data-theme="dark"] .t-slot {
+    background: rgba(26, 25, 22, 0.5);
+  }
+  .t-slot:hover {
+    transform: scale(1.1);
+  }
+  .t-slot.filled {
+    border-style: solid;
+    border-color: rgba(22, 163, 74, 0.4);
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: var(--green);
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2);
+  }
+
+  /* Skill pills - Enhanced */
+  .skills-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 1;
+  }
+  .stag {
+    font-size: 12px;
+    padding: 4px 11px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--ink2);
+    font-weight: 500;
+    transition: all var(--tr);
+    background: rgba(255, 255, 255, 0.6);
+  }
+  [data-theme="dark"] .stag {
+    background: rgba(26, 25, 22, 0.6);
+  }
+  .stag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  .stag.needed {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    border-color: rgba(22, 163, 74, 0.3);
+    color: var(--green);
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15);
+  }
+
+  /* Card footer - Enhanced */
+  .card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+  }
+  .c-acts {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .abtn {
+    padding: 8px 16px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    color: var(--ink2);
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    position: relative;
+    overflow: hidden;
+  }
+  [data-theme="dark"] .abtn {
+    background: rgba(26, 25, 22, 0.8);
+  }
+  .abtn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(244, 113, 58, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+    opacity: 0;
+    transition: opacity var(--tr);
+  }
+  .abtn:hover {
+    border-color: var(--ink3);
+    color: var(--ink);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  .abtn:hover::before {
+    opacity: 1;
+  }
+  .abtn-primary {
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    border: none;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(244, 113, 58, 0.25);
+  }
+  .abtn-primary:hover {
+    box-shadow: 0 6px 20px rgba(244, 113, 58, 0.35), 0 0 20px rgba(255, 107, 157, 0.2);
+  }
+  .abtn-applied {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    border-color: rgba(22, 163, 74, 0.3);
+    color: var(--green);
+    cursor: default;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15);
+  }
+  .abtn-edit {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-color: rgba(37, 99, 235, 0.2);
+    color: var(--blue);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+  }
+
+  .c-nums {
+    font-size: 12px;
+    color: var(--ink3);
+    display: flex;
+    gap: 14px;
+  }
+
+  /* Empty state - Enhanced */
+  .empty-state {
+    text-align: center;
+    padding: 64px 24px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(254, 245, 240, 0.95) 100%);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  }
+  [data-theme="dark"] .empty-state {
+    background: linear-gradient(135deg, rgba(26, 25, 22, 0.9) 0%, rgba(45, 26, 16, 0.85) 100%);
+  }
+  .empty-icon {
+    font-size: 44px;
+    margin-bottom: 14px;
+    animation: float 3s ease-in-out infinite;
+  }
+  .empty-state h3 {
+    font-family: "Fraunces", serif;
+    font-size: 24px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #f4713a 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .empty-state p {
+    color: var(--ink3);
+    font-size: 14px;
+  }
+
+  /* Pagination - Enhanced */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 32px;
+  }
+  .ppage {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--r-sm);
+    border: 1.5px solid var(--border);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink2);
+    transition: all var(--tr);
+    position: relative;
+    overflow: hidden;
+  }
+  [data-theme="dark"] .ppage {
+    background: rgba(26, 25, 22, 0.8);
+  }
+  .ppage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity var(--tr);
+  }
+  .ppage:hover {
+    border-color: var(--accent-solid);
+    color: var(--accent-solid);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 113, 58, 0.2);
+  }
+  .ppage:hover::before {
+    opacity: 0.1;
+  }
+  .ppage.on {
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(244, 113, 58, 0.3);
+  }
+
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .sidebar {
+      display: none;
+    }
+    .hero {
+      padding: 48px 20px 40px;
+    }
+  }
+  @media (max-width: 520px) {
+    .hs {
+      padding: 0 18px;
+    }
+    .hero-stats {
+      gap: 10px 0;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="dot"></span> India's builder community
+  </div>
+  <h1>Where ideas meet<br /><em>the right people</em></h1>
+  <p class="hero-sub">
+    Post your startup idea, find co-founders who actually care, and get noticed
+    by investors.
+  </p>
+  <div class="hero-btns">
+    <a href="{{ url_for('post_idea') }}" class="hbtn hbtn-fill"
+      >✦ Post your idea</a
+    >
+    <a href="#feed" class="hbtn hbtn-outline">Browse ideas →</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hs">
+      <div class="hs-n">{{ stats.total_ideas | default('3.8k') }}</div>
+      <div class="hs-l">Ideas posted</div>
+    </div>
+    <div class="hs">
+      <div class="hs-n">{{ stats.total_builders | default('12k+') }}</div>
+      <div class="hs-l">Builders</div>
+    </div>
+    <div class="hs">
+      <div class="hs-n">{{ stats.total_investors | default('240') }}</div>
+      <div class="hs-l">Investors</div>
+    </div>
+    <div class="hs">
+      <div class="hs-n">{{ stats.total_applications | default('4.1k') }}</div>
+      <div class="hs-l">Applications sent</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ LAYOUT ══ -->
+<div class="layout" id="feed">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <!-- Category -->
+    <div class="sbox">
+      <div class="sbox-label">Category</div>
+      <a
+        href="{{ url_for('index') }}"
+        class="fi {% if not request.args.get('category') %}on{% endif %}"
+      >
+        All ideas <span class="fi-n">{{ stats.total_ideas | default(0) }}</span>
+      </a>
+      {% for cat, count in [('AI/ML', category_counts.get('AI/ML',0)),
+      ('HealthTech', category_counts.get('HealthTech',0)), ('FinTech',
+      category_counts.get('FinTech',0)), ('CleanTech',
+      category_counts.get('CleanTech',0)), ('EdTech',
+      category_counts.get('EdTech',0)), ('Other',
+      category_counts.get('Other',0))] %}
+      <a
+        href="{{ url_for('index', category=cat, stage=request.args.get('stage',''), sort=request.args.get('sort','latest')) }}"
+        class="fi {% if request.args.get('category') == cat %}on{% endif %}"
+      >
+        {{ cat }} <span class="fi-n">{{ count }}</span>
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Stage -->
+    <div class="sbox">
+      <div class="sbox-label">Stage</div>
+      {% for stage in ['Just an idea','Building MVP','Launched','Growing'] %}
+      <a
+        href="{{ url_for('index', stage=stage, category=request.args.get('category',''), sort=request.args.get('sort','latest')) }}"
+        class="fi {% if request.args.get('stage') == stage %}on{% endif %}"
+      >
+        {{ stage }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Skills -->
+    <div class="sbox">
+      <div class="sbox-label">Skills needed</div>
+      <div class="skill-chips">
+        {% for s in
+        ['React','Python','Design','ML/AI','iOS','Android','Marketing','DevOps','Node.js','Sales']
+        %}
+        <span class="chip">{{ s }}</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <a href="{{ url_for('post_idea') }}" class="post-cta">✦ Post your idea</a>
+  </aside>
+
+  <!-- FEED -->
+  <section>
+    <!-- Search -->
+    <form class="search-bar" method="GET" action="{{ url_for('index') }}">
+      {% if request.args.get('category') %}
+      <input
+        type="hidden"
+        name="category"
+        value="{{ request.args.get('category') }}"
+      />
+      {% endif %} {% if request.args.get('stage') %}
+      <input
+        type="hidden"
+        name="stage"
+        value="{{ request.args.get('stage') }}"
+      />
+      {% endif %}
+      <input
+        type="text"
+        name="q"
+        placeholder="🔍  Search ideas, skills, founders…"
+        value="{{ request.args.get('q','') }}"
+      />
+      <button type="submit">Search</button>
+    </form>
+
+    <!-- Tabs -->
+    <div class="feed-top">
+      <div class="tabs">
+        {% for label, val in
+        [('Latest','latest'),('Trending','trending'),('Hiring','hiring'),('Funded','funded')]
+        %}
+        <a
+          href="{{ url_for('index', sort=val, category=request.args.get('category',''), stage=request.args.get('stage',''), q=request.args.get('q','')) }}"
+          class="tab {% if (request.args.get('sort','latest') == val) or (not request.args.get('sort') and val == 'latest') %}on{% endif %}"
+        >
+          {{ label }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- CARDS -->
+    {% if ideas %} {% set cat_icons =
+    {'AI/ML':'🤖','HealthTech':'💊','FinTech':'💰','CleanTech':'🌱','EdTech':'🎓','Other':'💡'}
+    %} {% for idea in ideas %}
+    <article class="card">
+      <div class="card-head">
+        <div class="c-avatar">{{ cat_icons.get(idea.category, '💡') }}</div>
+        <div class="c-info">
+          <div class="c-name">{{ idea.full_name }}</div>
+          <div class="c-meta">
+            {{ idea.city or 'India' }} &nbsp;·&nbsp; {{ idea.time_ago }}
+          </div>
+        </div>
+        <div class="c-tags">
+          {% if idea.category == 'AI/ML' %}
+          <span class="ctag ctag-o">{{ idea.category }}</span>
+          {% elif idea.category in ['HealthTech','FinTech'] %}
+          <span class="ctag ctag-b">{{ idea.category }}</span>
+          {% else %}
+          <span class="ctag ctag-g">{{ idea.category }}</span>
+          {% endif %} {% if idea.slots_open > 0 %}
+          <span class="ctag ctag-g"
+            >{{ idea.slots_open }} spot{{ 's' if idea.slots_open > 1 }}
+            open</span
+          >
+          {% else %}
+          <span class="ctag ctag-gr">Team full</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card-title">
+        <a href="{{ url_for('idea_detail', idea_id=idea.idea_id) }}"
+          >{{ idea.title }}</a
+        >
+      </div>
+      <div class="card-desc">{{ idea.description | truncate(190) }}</div>
+
+      <!-- Team slots -->
+      <div class="team-row">
+        <span>Team —</span>
+        <div class="t-slot filled">👤</div>
+        {% for _ in range([idea.slots_open, 3] | min) %}
+        <div class="t-slot">?</div>
+        {% endfor %}
+        <span>{{ idea.slots_open }} open</span>
+      </div>
+
+      <!-- Skills -->
+      {% if idea.skills %}
+      <div class="skills-row">
+        {% for skill in idea.skills %}
+        <span class="stag {% if skill.is_needed %}needed{% endif %}">
+          {{ skill.skill_name }}{% if skill.is_needed %} ✦{% endif %}
+        </span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="card-foot">
+        <div class="c-acts">
+          {% if session.get('user_id') and session.get('user_id') ==
+          idea.user_id %}
+          <a
+            href="{{ url_for('edit_idea', idea_id=idea.idea_id) }}"
+            class="abtn abtn-edit"
+            >✏ Edit</a
+          >
+          <form
+            method="POST"
+            action="{{ url_for('delete_idea', idea_id=idea.idea_id) }}"
+            style="display: inline"
+            onsubmit="return confirm('Delete this idea permanently?');"
+          >
+            
+            <button
+              class="abtn"
+              style="color: #dc2626; border-color: rgba(220, 38, 38, 0.25)"
+            >
+              🗑 Delete
+            </button>
+          </form>
+          {% elif session.get('user_id') %} {% if idea.idea_id in
+          (user_applied_ids or []) %}
+          <span class="abtn abtn-applied">✓ Applied</span>
+          {% elif idea.slots_open > 0 %}
+          <form
+  method="POST"
+  action="{{ url_for('apply', idea_id=idea.idea_id) }}"
+  style="display: inline"
+>
+  <button type="submit" class="abtn abtn-primary">
+    Apply to join
+  </button>
+</form>
+          {% else %}
+          <span class="abtn" style="cursor: default; color: var(--ink3)"
+            >Team full</span
+          >
+          {% endif %}
+          <button class="abtn" onclick="showToast('Saved to your list ♡')">
+            ♡ Save
+          </button>
+          {% else %}
+          <a href="{{ url_for('login') }}" class="abtn abtn-primary"
+            >Apply to join</a
+          >
+          <a href="{{ url_for('login') }}" class="abtn">♡ Save</a>
+          {% endif %}
+          <a
+            href="{{ url_for('idea_detail', idea_id=idea.idea_id) }}"
+            class="abtn"
+            >💬 Comments</a
+          >
+        </div>
+        <div class="c-nums">
+          <span>👁 {{ idea.views }}</span>
+          <span>🙋 {{ idea.application_count }} applied</span>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if total_pages and total_pages > 1 %}
+    <div class="pagination">
+      {% if page > 1 %}
+      <a
+        class="ppage"
+        href="{{ url_for('index', page=page-1, sort=request.args.get('sort',''), category=request.args.get('category',''), stage=request.args.get('stage',''), q=request.args.get('q','')) }}"
+        >←</a
+      >
+      {% endif %} {% for p in range(1, total_pages+1) %}
+      <a
+        class="ppage {% if p == page %}on{% endif %}"
+        href="{{ url_for('index', page=p, sort=request.args.get('sort',''), category=request.args.get('category',''), stage=request.args.get('stage',''), q=request.args.get('q','')) }}"
+        >{{ p }}</a
+      >
+      {% endfor %} {% if page < total_pages %}
+      <a
+        class="ppage"
+        href="{{ url_for('index', page=page+1, sort=request.args.get('sort',''), category=request.args.get('category',''), stage=request.args.get('stage',''), q=request.args.get('q','')) }}"
+        >→</a
+      >
+      {% endif %}
+    </div>
+    {% endif %} {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🔭</div>
+      <h3>Nothing here yet</h3>
+      <p>
+        No ideas match your filters. Try a different category or be the first to
+        post!
+      </p>
+    </div>
+    {% endif %}
+  </section>
+</div>
+
+{% endblock %}

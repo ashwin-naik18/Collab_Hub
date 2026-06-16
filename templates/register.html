@@ -1,0 +1,490 @@
+{% extends "base.html" %} {% block title %}Register - CollabHub{% endblock %} 
+{% block navbar %}{% endblock %}
+
+{%block content %}
+
+<style>
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  
+  .register-page {
+    font-family: "Inter", sans-serif;
+    background: #f5f5f7;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+    color: #111;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 20px;
+    padding: 44px 40px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  .head {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .head .logo {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f4713a;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .head h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 6px;
+  }
+  .head p {
+    font-size: 14px;
+    color: #888;
+  }
+
+  form {
+    display: grid;
+    gap: 14px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #444;
+  }
+
+  .wrap {
+    position: relative;
+  }
+  .wrap .ic {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    pointer-events: none;
+  }
+  .wrap .ic.top {
+    top: 14px;
+    transform: none;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    background: #fafafa;
+    border: 1.5px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 11px 12px 11px 38px;
+    font-family: "Inter", sans-serif;
+    font-size: 14px;
+    color: #111;
+    outline: none;
+    transition:
+      border-color 0.18s,
+      box-shadow 0.18s;
+    -webkit-appearance: none;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: #bbb;
+  }
+  textarea {
+    resize: none;
+    min-height: 80px;
+    padding-top: 12px;
+    line-height: 1.5;
+  }
+  select option {
+    background: #fff;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: #f4713a;
+    box-shadow: 0 0 0 3px rgba(244, 113, 58, 0.1);
+    background: #fff;
+  }
+
+  input.err {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08) !important;
+  }
+  input.ok {
+    border-color: #22c55e !important;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.08) !important;
+  }
+
+  .msg {
+    font-size: 11.5px;
+    font-weight: 500;
+    min-height: 15px;
+  }
+  .msg.e {
+    color: #ef4444;
+  }
+  .msg.s {
+    color: #16a34a;
+  }
+
+  .sbar {
+    display: flex;
+    gap: 3px;
+    margin-top: 5px;
+  }
+  .sbar span {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: #e5e5e5;
+    transition: background 0.25s;
+  }
+  .sbar span.w {
+    background: #ef4444;
+  }
+  .sbar span.m {
+    background: #f59e0b;
+  }
+  .sbar span.g {
+    background: #22c55e;
+  }
+
+  .bio-count {
+    font-size: 11px;
+    color: #bbb;
+    text-align: right;
+    margin-top: 2px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 13px;
+    background: #f4713a;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: "Inter", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background 0.18s,
+      transform 0.12s,
+      box-shadow 0.18s;
+    margin-top: 4px;
+    box-shadow: 0 2px 12px rgba(244, 113, 58, 0.25);
+  }
+  .btn:hover {
+    background: #e3622a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 18px rgba(244, 113, 58, 0.3);
+  }
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  .foot {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #888;
+  }
+  .foot a {
+    color: #f4713a;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .foot a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 560px) {
+    .card {
+      padding: 30px 20px;
+      border-radius: 16px;
+    }
+    .row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<!-- ✅ Wrapper div instead of relying on body styles -->
+<div class="register-page">
+  <div class="card">
+    <div class="head">
+      <div class="logo">CollabHub</div>
+      <h1>Create your account</h1>
+      <p>Fill in the details below to get started</p>
+    </div>
+
+    <form id="regForm" action="/register" method="POST" novalidate>
+      <!-- Full Name -->
+      <div class="field">
+        <label for="fullName">Full Name</label>
+        <div class="wrap">
+          <span class="ic">👤</span>
+          <input
+            type="text"
+            id="fullName"
+            name="full_name"
+            placeholder="Full Name"
+            autocomplete="name"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Email + Phone -->
+      <div class="row">
+        <div class="field">
+          <label for="email">Email</label>
+          <div class="wrap">
+            <span class="ic">📧</span>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="example@gmail.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+          <div class="msg" id="emailMsg"></div>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <div class="wrap">
+            <span class="ic">📱</span>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              placeholder="9876543210"
+              maxlength="10"
+              required
+            />
+          </div>
+          <div class="msg" id="phoneMsg"></div>
+        </div>
+      </div>
+
+      <!-- Password + Confirm -->
+      <div class="row">
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="wrap">
+            <span class="ic">🔒</span>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Min 8 characters"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <div class="sbar">
+            <span id="b1"></span><span id="b2"></span><span id="b3"></span
+            ><span id="b4"></span>
+          </div>
+          <div class="msg" id="passMsg"></div>
+        </div>
+        <div class="field">
+          <label for="confirm">Confirm Password</label>
+          <div class="wrap">
+            <span class="ic">🔐</span>
+            <input
+              type="password"
+              id="confirm"
+              name="confirm_password"
+              placeholder="Repeat password"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <div class="msg" id="confirmMsg"></div>
+        </div>
+      </div>
+
+      <!-- Role + City -->
+      <div class="row">
+        <div class="field">
+          <label for="role">Role</label>
+          <div class="wrap">
+            <span class="ic">🚀</span>
+            <select id="role" name="role">
+              <option value="builder">Builder</option>
+              <option value="investor">Investor</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="city">City</label>
+          <div class="wrap">
+            <span class="ic">📍</span>
+            <input
+              type="text"
+              id="city"
+              name="city"
+              placeholder="Bangalore"
+              autocomplete="address-level2"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div class="field">
+        <label for="bio"
+          >Bio
+          <span style="color: #bbb; font-weight: 400">(optional)</span></label
+        >
+        <div class="wrap">
+          <span class="ic top">💬</span>
+          <textarea
+            id="bio"
+            name="bio"
+            placeholder="Tell the community about yourself..."
+            maxlength="300"
+          ></textarea>
+        </div>
+        <div class="bio-count" id="bioCount">0 / 300</div>
+      </div>
+
+      <button type="submit" class="btn">Create Account →</button>
+    </form>
+
+    <div class="foot">Already have an account? <a href="/login">Login</a></div>
+  </div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const pass = $("password"),
+    conf = $("confirm"),
+    ph = $("phone"),
+    em = $("email");
+
+  function msg(el, text, type) {
+    el.textContent = text;
+    el.className = "msg" + (text ? " " + type : "");
+  }
+
+  function mark(el, state) {
+    el.classList.remove("ok", "err");
+    if (state) el.classList.add(state);
+  }
+
+  ph.addEventListener("input", () => {
+    ph.value = ph.value.replace(/\D/g, "");
+    if (!ph.value) {
+      msg($("phoneMsg"), "", "");
+      mark(ph, "");
+      return;
+    }
+    const ok = ph.value.length === 10;
+    msg($("phoneMsg"), ok ? "✓ Valid" : "✕ Must be 10 digits", ok ? "s" : "e");
+    mark(ph, ok ? "ok" : "err");
+  });
+
+  em.addEventListener("blur", () => {
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em.value.trim());
+    if (!em.value) {
+      msg($("emailMsg"), "", "");
+      mark(em, "");
+      return;
+    }
+    msg($("emailMsg"), ok ? "✓ Valid" : "✕ Invalid email", ok ? "s" : "e");
+    mark(em, ok ? "ok" : "err");
+  });
+
+  const bars = [$("b1"), $("b2"), $("b3"), $("b4")];
+  const lvl = ["", "Weak", "Fair", "Good", "Strong"];
+  const cls = ["", "w", "m", "g", "g"];
+
+  pass.addEventListener("input", () => {
+    const v = pass.value;
+    let s = 0;
+    if (v.length >= 8) s++;
+    if (/[A-Z]/.test(v)) s++;
+    if (/[0-9]/.test(v)) s++;
+    if (/[^A-Za-z0-9]/.test(v)) s++;
+    bars.forEach((b, i) => (b.className = i < s ? cls[s] : ""));
+    msg($("passMsg"), v ? lvl[s] : "", s < 3 ? "e" : "s");
+    if (conf.value) checkMatch();
+  });
+
+  function checkMatch() {
+    const ok = pass.value === conf.value;
+    msg(
+      $("confirmMsg"),
+      conf.value ? (ok ? "✓ Passwords match" : "✕ Do not match") : "",
+      ok ? "s" : "e",
+    );
+    mark(conf, conf.value ? (ok ? "ok" : "err") : "");
+    return ok;
+  }
+  conf.addEventListener("input", checkMatch);
+
+  $("bio").addEventListener("input", function () {
+    const l = this.value.length;
+    $("bioCount").textContent = l + " / 300";
+    $("bioCount").style.color = l > 270 ? "#ef4444" : "#bbb";
+  });
+
+  $("regForm").addEventListener("submit", function (e) {
+    let ok = true;
+    if (!$("fullName").value.trim()) {
+      mark($("fullName"), "err");
+      ok = false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em.value.trim())) {
+      mark(em, "err");
+      msg($("emailMsg"), "✕ Invalid email", "e");
+      ok = false;
+    }
+    if (ph.value.length !== 10) {
+      mark(ph, "err");
+      msg($("phoneMsg"), "✕ Must be 10 digits", "e");
+      ok = false;
+    }
+    if (pass.value.length < 8) {
+      mark(pass, "err");
+      msg($("passMsg"), "✕ Min 8 characters", "e");
+      ok = false;
+    }
+    if (!checkMatch()) ok = false;
+    if (!ok) e.preventDefault();
+  });
+</script>
+{% endblock %}

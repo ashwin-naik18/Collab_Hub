@@ -1,0 +1,1129 @@
+{% extends "base.html" %} {% block title %}{{ idea.title }} — CollabHub{%
+endblock %} {% block extra_styles %}
+<style>
+  /* ═══════════════════════════════════
+     HERO BANNER
+  ═══════════════════════════════════ */
+  .detail-hero {
+    background: linear-gradient(
+      135deg,
+      rgba(254, 243, 231, 0.9) 0%,
+      rgba(224, 242, 254, 0.95) 50%,
+      rgba(253, 240, 235, 0.9) 100%
+    );
+    border-bottom: 1px solid var(--border);
+    padding: 48px 28px 44px;
+    position: relative;
+    overflow: hidden;
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+  }
+  [data-theme="dark"] .detail-hero {
+    background: linear-gradient(
+      135deg,
+      rgba(45, 26, 16, 0.6) 0%,
+      rgba(30, 41, 59, 0.7) 50%,
+      rgba(26, 15, 30, 0.6) 100%
+    );
+  }
+  .detail-hero::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 320px;
+    background: radial-gradient(
+      ellipse,
+      rgba(244, 113, 58, 0.15) 0%,
+      rgba(255, 107, 157, 0.1) 40%,
+      transparent 70%
+    );
+    pointer-events: none;
+    animation: float 15s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateX(-50%) translateY(0);
+    }
+    50% {
+      transform: translateX(-50%) translateY(-10px);
+    }
+  }
+
+  .detail-hero-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--ink3);
+    margin-bottom: 20px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .breadcrumb a {
+    color: var(--ink3);
+    transition: color 0.15s;
+  }
+  .breadcrumb a:hover {
+    color: var(--accent);
+  }
+  .breadcrumb .sep {
+    color: var(--ink4);
+  }
+
+  /* Hero top row */
+  .hero-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.4s 0.05s ease both;
+  }
+  .idea-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .hero-meta {
+    flex: 1;
+  }
+  .hero-tags {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .htag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 11px;
+    border-radius: 6px;
+    letter-spacing: 0.2px;
+  }
+  .htag-o {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .htag-g {
+    background: var(--green-soft);
+    color: var(--green);
+  }
+  .htag-b {
+    background: var(--blue-soft);
+    color: var(--blue);
+  }
+  .htag-gr {
+    background: var(--bg3);
+    color: var(--ink3);
+  }
+
+  .hero-poster {
+    font-size: 14px;
+    color: var(--ink3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .hero-poster strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .detail-title {
+    font-family: "Fraunces", serif;
+    font-size: clamp(24px, 3.5vw, 38px);
+    font-weight: 700;
+    line-height: 1.2;
+    background: linear-gradient(135deg, #1c1917 0%, #f4713a 50%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 14px;
+    animation: fadeUp 0.4s 0.1s ease both;
+  }
+  [data-theme="dark"] .detail-title {
+    background: linear-gradient(135deg, #fafaf9 0%, #f4713a 50%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* View count row */
+  .hero-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 13px;
+    color: var(--ink3);
+    animation: fadeUp 0.4s 0.15s ease both;
+    flex-wrap: wrap;
+  }
+  .hsr-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ═══════════════════════════════════
+     MAIN LAYOUT
+  ═══════════════════════════════════ */
+  .detail-layout {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 28px 80px;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* ═══════════════════════════════════
+     CONTENT SECTIONS
+  ═══════════════════════════════════ */
+  .content-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .sec-head {
+    font-family: "Fraunces", serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-head .sh-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+  }
+  .sec-head .sh-icon.green {
+    background: var(--green-soft);
+  }
+  .sec-head .sh-icon.blue {
+    background: var(--blue-soft);
+  }
+  .sec-head .sh-icon.gray {
+    background: var(--bg3);
+  }
+
+  .desc-text {
+    font-size: 15px;
+    color: var(--ink2);
+    line-height: 1.8;
+    white-space: pre-line;
+  }
+
+  /* Skills */
+  .skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .stag-detail {
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--ink2);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .stag-detail.needed {
+    background: var(--green-soft);
+    border-color: rgba(22, 163, 74, 0.3);
+    color: var(--green);
+  }
+  .stag-detail .dot-skill {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+  }
+
+  /* Team section */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
+  .team-slot {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--r);
+    padding: 16px 12px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--ink3);
+    transition: all var(--tr);
+  }
+  .team-slot .ts-icon {
+    font-size: 24px;
+    margin-bottom: 7px;
+  }
+  .team-slot.filled {
+    border-style: solid;
+    border-color: rgba(22, 163, 74, 0.3);
+    background: var(--green-soft);
+  }
+  .team-slot.filled .ts-name {
+    font-weight: 600;
+    color: var(--green);
+    font-size: 13px;
+  }
+  .team-slot.filled .ts-role {
+    font-size: 12px;
+    color: var(--green);
+    opacity: 0.7;
+    margin-top: 3px;
+  }
+  .team-slot.open .ts-label {
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════
+     COMMENTS
+  ═══════════════════════════════════ */
+  .comment-form textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    font-family: "Outfit", sans-serif;
+    resize: vertical;
+    min-height: 90px;
+    outline: none;
+    transition: all var(--tr);
+    line-height: 1.6;
+  }
+  .comment-form textarea:focus {
+    border-color: var(--accent);
+    background: var(--bg2);
+    box-shadow: 0 0 0 3px rgba(244, 113, 58, 0.12);
+  }
+  .comment-form textarea::placeholder {
+    color: var(--ink4);
+  }
+  .comment-submit {
+    margin-top: 10px;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #f4713a, #ff6b9d);
+    color: #fff;
+    border: none;
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    box-shadow: 0 4px 12px rgba(244, 113, 58, 0.25);
+  }
+  .comment-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(244, 113, 58, 0.4);
+  }
+
+  .comment-list {
+    margin-top: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .comment-item {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .comment-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .c-av {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--accent-soft);
+    border: 1.5px solid rgba(244, 113, 58, 0.2);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .c-body {
+    flex: 1;
+  }
+  .c-top {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 5px;
+  }
+  .c-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .c-time {
+    font-size: 12px;
+    color: var(--ink3);
+  }
+  .c-text {
+    font-size: 14px;
+    color: var(--ink2);
+    line-height: 1.65;
+  }
+
+  .no-comments {
+    text-align: center;
+    padding: 30px;
+    font-size: 14px;
+    color: var(--ink3);
+  }
+  .no-comments .nc-icon {
+    font-size: 30px;
+    margin-bottom: 8px;
+  }
+
+  /* ═══════════════════════════════════
+     RIGHT SIDEBAR
+  ═══════════════════════════════════ */
+
+  /* Apply box */
+  .apply-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow-sm);
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+    animation: fadeUp 0.5s 0.05s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+  .apply-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #f4713a, #ff6b9d, #818cf8);
+  }
+  .apply-box-title {
+    font-family: "Fraunces", serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 7px;
+  }
+  .apply-box-sub {
+    font-size: 13px;
+    color: var(--ink3);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+
+  .apply-btn {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    color: #fff;
+    border: none;
+    border-radius: var(--r);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    box-shadow: 0 4px 14px rgba(244, 113, 58, 0.3);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.2px;
+  }
+  .apply-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0)
+    );
+    opacity: 0;
+    transition: opacity var(--tr);
+  }
+  .apply-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(244, 113, 58, 0.45);
+  }
+  .apply-btn:hover::before {
+    opacity: 1;
+  }
+  .apply-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .apply-btn.applied {
+    background: var(--green-soft);
+    color: var(--green);
+    border: 1.5px solid rgba(22, 163, 74, 0.3);
+    box-shadow: none;
+    cursor: default;
+  }
+  .apply-btn.applied:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .login-nudge {
+    text-align: center;
+    font-size: 13px;
+    color: var(--ink3);
+    margin-top: 12px;
+  }
+  .login-nudge a {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Apply form (shown/hidden) */
+  .apply-form-wrap {
+    margin-top: 16px;
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+  .apply-form-wrap.open {
+    display: block;
+  }
+  .apply-form-wrap textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 13px;
+    font-family: "Outfit", sans-serif;
+    min-height: 90px;
+    resize: vertical;
+    outline: none;
+    transition: all var(--tr);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .apply-form-wrap textarea:focus {
+    border-color: var(--accent);
+    background: var(--bg2);
+    box-shadow: 0 0 0 3px rgba(244, 113, 58, 0.12);
+  }
+  .apply-form-wrap textarea::placeholder {
+    color: var(--ink4);
+  }
+  .apply-form-wrap input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 13px;
+    font-family: "Outfit", sans-serif;
+    outline: none;
+    transition: all var(--tr);
+    margin-bottom: 8px;
+  }
+  .apply-form-wrap input:focus {
+    border-color: var(--accent);
+    background: var(--bg2);
+    box-shadow: 0 0 0 3px rgba(244, 113, 58, 0.12);
+  }
+  .apply-form-wrap label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+  .apply-form-wrap .field-g {
+    margin-bottom: 12px;
+  }
+  .send-apply-btn {
+    width: 100%;
+    padding: 11px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+  }
+  .send-apply-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  /* Poster card */
+  .poster-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow-sm);
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+  .poster-card .pc-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .poster-av {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    border: 2px solid rgba(244, 113, 58, 0.25);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pc-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .pc-city {
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 2px;
+  }
+  .pc-bio {
+    font-size: 13px;
+    color: var(--ink2);
+    line-height: 1.6;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Info row */
+  .info-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+    animation: fadeUp 0.5s 0.15s ease both;
+  }
+  .info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .info-row .ir-label {
+    color: var(--ink3);
+    font-weight: 500;
+  }
+  .info-row .ir-val {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .stage-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 5px;
+    background: var(--amber-soft);
+    color: var(--amber);
+  }
+
+  @media (max-width: 768px) {
+    .detail-layout {
+      grid-template-columns: 1fr;
+    }
+    .detail-hero {
+      padding: 36px 20px 32px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+
+<!-- ══ DETAIL HERO ══ -->
+<div class="detail-hero">
+  <div class="detail-hero-inner">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="{{ url_for('index') }}">← Explore</a>
+      <span class="sep">/</span>
+      <span>{{ idea.category }}</span>
+    </div>
+
+    <!-- Top row: avatar + tags + poster -->
+    <div class="hero-top">
+      <div class="idea-avatar">
+        {% set cat_icons =
+        {'AI/ML':'🤖','HealthTech':'💊','FinTech':'💰','CleanTech':'🌱','EdTech':'🎓','Other':'💡'}
+        %} {{ cat_icons.get(idea.category, '💡') }}
+      </div>
+      <div class="hero-meta">
+        <div class="hero-tags">
+          {% if idea.category == 'AI/ML' %}
+          <span class="htag htag-o">{{ idea.category }}</span>
+          {% elif idea.category in ['HealthTech','FinTech'] %}
+          <span class="htag htag-b">{{ idea.category }}</span>
+          {% else %}
+          <span class="htag htag-g">{{ idea.category }}</span>
+          {% endif %}
+          <span class="htag htag-gr">{{ idea.stage }}</span>
+          {% if idea.slots_open > 0 %}
+          <span class="htag htag-g"
+            >{{ idea.slots_open }} spot{{ 's' if idea.slots_open > 1 }}
+            open</span
+          >
+          {% else %}
+          <span class="htag htag-gr">Team full</span>
+          {% endif %} {% if idea.seeking_investors %}
+          <span class="htag htag-o">💰 Seeking investors</span>
+          {% endif %}
+        </div>
+        <div class="hero-poster">
+          <strong>{{ idea.full_name }}</strong>
+          <span>·</span> {{ idea.city or 'India' }} <span>·</span> {{
+          idea.time_ago }}
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-title">{{ idea.title }}</div>
+
+    <div class="hero-stats-row">
+      <span class="hsr-item">👁 {{ idea.views }} views</span>
+      <span class="hsr-item">🙋 {{ idea.application_count }} applied</span>
+      <span class="hsr-item">💬 {{ idea.comment_count }} comments</span>
+      {% if idea.pitch_line %}
+      <span
+        class="hsr-item"
+        style="color: var(--accent); font-style: italic; font-weight: 500"
+      >
+        "{{ idea.pitch_line }}"
+      </span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ══ DETAIL LAYOUT ══ -->
+<div class="detail-layout">
+  <!-- LEFT: MAIN CONTENT -->
+  <div>
+    <!-- Description -->
+    <div class="content-card">
+      <div class="sec-head">
+        <span class="sh-icon">💡</span> The Problem & Solution
+      </div>
+      <p class="desc-text">{{ idea.description }}</p>
+    </div>
+
+    <!-- Skills needed -->
+    {% if idea.skills %}
+    <div class="content-card">
+      <div class="sec-head">
+        <span class="sh-icon green">🛠</span> Skills
+        <span
+          style="
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--ink3);
+            margin-left: auto;
+          "
+        >
+          <span style="color: var(--green)">✦ needed</span> &nbsp; plain =
+          already have
+        </span>
+      </div>
+      <div class="skills-grid">
+        {% for skill in idea.skills %}
+        <span class="stag-detail {% if skill.is_needed %}needed{% endif %}">
+          <span class="dot-skill"></span>
+          {{ skill.skill_name }} {% if skill.is_needed %} — needed{% endif %}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Team -->
+    <div class="content-card">
+      <div class="sec-head"><span class="sh-icon green">👥</span> The Team</div>
+      <div class="team-grid">
+        <!-- Founder always shown as filled -->
+        <div class="team-slot filled">
+          <div class="ts-icon">{{ idea.full_name[0].upper() }}</div>
+          <div class="ts-name">{{ idea.full_name.split()[0] }}</div>
+          <div class="ts-role">Founder</div>
+        </div>
+        {% for _ in range(idea.slots_open) %}
+        <div class="team-slot open">
+          <div class="ts-icon">❓</div>
+          <div class="ts-label">Open spot</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Comments -->
+    <div class="content-card">
+      <div class="sec-head">
+        <span class="sh-icon blue">💬</span> Comments
+        <span
+          style="
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ink3);
+            margin-left: auto;
+          "
+        >
+          {{ idea.comment_count }} comment{{ 's' if idea.comment_count != 1 }}
+        </span>
+      </div>
+
+      <!-- Comment form -->
+      {% if session.get('user_id') %}
+      <form
+        method="POST"
+        action="{{ url_for('add_comment', idea_id=idea.idea_id) }}"
+        class="comment-form"
+      >
+        
+        <textarea
+          name="body"
+          placeholder="Share your thoughts, ask a question, or offer feedback…"
+          required
+        ></textarea>
+        <button type="submit" class="comment-submit">Post comment</button>
+      </form>
+      {% else %}
+      <p
+        style="
+          font-size: 14px;
+          color: var(--ink3);
+          padding: 14px;
+          background: var(--bg);
+          border-radius: var(--r);
+          text-align: center;
+        "
+      >
+        <a
+          href="{{ url_for('login') }}"
+          style="color: var(--accent); font-weight: 600"
+          >Log in</a
+        >
+        to leave a comment.
+      </p>
+      {% endif %}
+
+      <!-- Comment list -->
+      {% if comments %}
+      <div class="comment-list">
+        {% for c in comments %}
+        <div class="comment-item">
+          <div class="c-av">{{ c.full_name[0].upper() }}</div>
+          <div class="c-body">
+            <div class="c-top">
+              <span class="c-name">{{ c.full_name }}</span>
+              <span class="c-time">{{ c.time_ago }}</span>
+              {% if c.user_id == idea.user_id %}
+              <span
+                style="
+                  font-size: 11px;
+                  font-weight: 700;
+                  padding: 2px 8px;
+                  border-radius: 4px;
+                  background: var(--accent-soft);
+                  color: var(--accent);
+                "
+                >Founder</span
+              >
+              {% endif %}
+            </div>
+            <p class="c-text">{{ c.body }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="no-comments">
+        <div class="nc-icon">💭</div>
+        <p>No comments yet. Be the first to say something!</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- RIGHT: SIDEBAR -->
+  <aside>
+    <!-- Apply box -->
+    <div class="apply-box">
+      {% if session.get('user_id') and session.get('user_id') == idea.user_id %}
+      <!-- Owner view -->
+      <div class="apply-box-title">Your idea 🎉</div>
+      <div class="apply-box-sub">
+        {{ idea.application_count }} people have applied. Review and accept your
+        team.
+      </div>
+      <a
+        href="{{ url_for('my_applications') }}"
+        class="apply-btn"
+        style="display: block; text-align: center; text-decoration: none"
+      >
+        View applications →
+      </a>
+      <div style="margin-top: 10px; display: flex; gap: 8px">
+        <a
+          href="{{ url_for('edit_idea', idea_id=idea.idea_id) }}"
+          style="
+            flex: 1;
+            display: block;
+            text-align: center;
+            padding: 9px;
+            border-radius: var(--r-sm);
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--blue);
+            background: var(--blue-soft);
+          "
+        >
+          ✏ Edit
+        </a>
+        <form
+          method="POST"
+          action="{{ url_for('delete_idea', idea_id=idea.idea_id) }}"
+          style="flex: 1"
+          onsubmit="return confirm('Delete this idea permanently?');"
+        >
+          
+          <button
+            style="
+              width: 100%;
+              padding: 9px;
+              border-radius: var(--r-sm);
+              border: 1.5px solid rgba(220, 38, 38, 0.25);
+              font-size: 13px;
+              font-weight: 600;
+              color: #dc2626;
+              background: #fee2e2;
+              cursor: pointer;
+              font-family: Outfit, sans-serif;
+            "
+          >
+            🗑 Delete
+          </button>
+        </form>
+      </div>
+
+      {% elif session.get('user_id') %}
+      <!-- Logged-in visitor -->
+      {% if already_applied %}
+      <div class="apply-box-title">You've applied ✓</div>
+      <div class="apply-box-sub">
+        {{ idea.full_name.split()[0] }} will review your profile and get back to
+        you.
+      </div>
+      <button class="apply-btn applied">✓ Application sent</button>
+      {% elif idea.slots_open > 0 %}
+      <div class="apply-box-title">Want to join?</div>
+      <div class="apply-box-sub">
+        Introduce yourself and tell {{ idea.full_name.split()[0] }} what you
+        bring to the table.
+      </div>
+      <button class="apply-btn" id="applyToggle" onclick="toggleApplyForm()">
+        Apply to join →
+      </button>
+      <div class="apply-form-wrap" id="applyForm">
+        <form
+          method="POST"
+          action="{{ url_for('apply', idea_id=idea.idea_id) }}"
+        >
+          
+          <div class="field-g">
+            <label>Your skills</label>
+            <input
+              type="text"
+              name="skills_offered"
+              placeholder="e.g. React, Node.js, UI design"
+            />
+          </div>
+          <div class="field-g">
+            <label>Why you? (optional)</label>
+            <textarea
+              name="cover_note"
+              placeholder="What excites you about this idea? What can you contribute?"
+            ></textarea>
+          </div>
+          <button type="submit" class="send-apply-btn">
+            Send application ✦
+          </button>
+        </form>
+      </div>
+      {% else %}
+      <div class="apply-box-title">Team is full</div>
+      <div class="apply-box-sub">
+        No spots open right now. Save this idea to check back later.
+      </div>
+      <button class="apply-btn" disabled>Team full</button>
+      {% endif %} {% else %}
+      <!-- Logged-out visitor -->
+      <div class="apply-box-title">Interested?</div>
+      <div class="apply-box-sub">
+        Join CollabHub free to apply to this idea and connect with founders.
+      </div>
+      <a
+        href="{{ url_for('register') }}"
+        class="apply-btn"
+        style="display: block; text-align: center; text-decoration: none"
+      >
+        Join free & apply ✦
+      </a>
+      <div class="login-nudge">
+        Already a member? <a href="{{ url_for('login') }}">Log in</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Poster info -->
+    <div class="poster-card">
+      <div class="pc-head">
+        <div class="poster-av">{{ idea.full_name[0].upper() }}</div>
+        <div>
+          <div class="pc-name">{{ idea.full_name }}</div>
+          <div class="pc-city">📍 {{ idea.city or 'India' }}</div>
+        </div>
+      </div>
+      {% if idea.bio %}
+      <div class="pc-bio">{{ idea.bio }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Idea info -->
+    <div class="info-card">
+      <div class="info-row">
+        <span class="ir-label">Category</span>
+        <span class="ir-val">{{ idea.category }}</span>
+      </div>
+      <div class="info-row">
+        <span class="ir-label">Stage</span>
+        <span class="stage-badge">{{ idea.stage }}</span>
+      </div>
+      <div class="info-row">
+        <span class="ir-label">Spots open</span>
+        <span class="ir-val">{{ idea.slots_open }}</span>
+      </div>
+      <div class="info-row">
+        <span class="ir-label">Posted</span>
+        <span class="ir-val">{{ idea.time_ago }}</span>
+      </div>
+      <div class="info-row">
+        <span class="ir-label">Total views</span>
+        <span class="ir-val">{{ idea.views }}</span>
+      </div>
+    </div>
+  </aside>
+</div>
+
+{% endblock %} {% block extra_scripts %}
+<script>
+  function toggleApplyForm() {
+    const form = document.getElementById("applyForm");
+    const btn = document.getElementById("applyToggle");
+    const open = form.classList.toggle("open");
+    btn.textContent = open ? "✕ Cancel" : "Apply to join →";
+  }
+</script>
+{% endblock %}

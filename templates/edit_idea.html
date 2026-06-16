@@ -1,0 +1,1353 @@
+{% extends "base.html" %} {% block title %}Edit — {{ idea.title }} — CollabHub{%
+endblock %} {% block extra_styles %}
+<style>
+  /* ═══════════════════════════════════════════════════
+     ANIMATIONS
+  ═══════════════════════════════════════════════════ */
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateX(-50%) translateY(0);
+    }
+    50% {
+      transform: translateX(-50%) translateY(-10px);
+    }
+  }
+  @keyframes glow {
+    0%,
+    100% {
+      box-shadow: 0 4px 16px rgba(244, 113, 58, 0.15);
+    }
+    50% {
+      box-shadow:
+        0 4px 24px rgba(244, 113, 58, 0.35),
+        0 0 30px rgba(255, 107, 157, 0.2);
+    }
+  }
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(0.7);
+      opacity: 0.5;
+    }
+  }
+  @keyframes shimmer {
+    0%,
+    100% {
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(1.25);
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     PAGE BANNER
+  ═══════════════════════════════════════════════════ */
+  .page-banner {
+    background: linear-gradient(
+      135deg,
+      rgba(254, 243, 231, 0.9) 0%,
+      rgba(224, 242, 254, 0.95) 50%,
+      rgba(253, 240, 235, 0.9) 100%
+    );
+    border-bottom: 1px solid var(--border);
+    padding: 52px 28px 44px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+  }
+  [data-theme="dark"] .page-banner {
+    background: linear-gradient(
+      135deg,
+      rgba(45, 26, 16, 0.6) 0%,
+      rgba(30, 41, 59, 0.7) 50%,
+      rgba(26, 15, 30, 0.6) 100%
+    );
+  }
+  .page-banner::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 650px;
+    height: 320px;
+    background: radial-gradient(
+      ellipse,
+      rgba(244, 113, 58, 0.18) 0%,
+      rgba(255, 107, 157, 0.12) 40%,
+      transparent 70%
+    );
+    pointer-events: none;
+    animation: float 14s ease-in-out infinite;
+  }
+  .page-banner::after {
+    content: "";
+    position: absolute;
+    top: 40%;
+    right: 8%;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(
+      circle,
+      rgba(99, 102, 241, 0.12) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    animation: float 20s ease-in-out infinite reverse;
+  }
+
+  .banner-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--ink3);
+    margin-bottom: 20px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .breadcrumb a {
+    color: var(--ink3);
+    transition: color 0.15s;
+  }
+  .breadcrumb a:hover {
+    color: var(--accent);
+  }
+  .breadcrumb .sep {
+    color: var(--ink4);
+  }
+
+  .banner-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: linear-gradient(
+      135deg,
+      rgba(254, 240, 235, 0.9) 0%,
+      rgba(253, 242, 248, 0.95) 100%
+    );
+    color: var(--accent);
+    border: 1px solid rgba(244, 113, 58, 0.3);
+    padding: 5px 14px;
+    border-radius: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    animation:
+      fadeUp 0.4s ease both,
+      glow 3s ease-in-out infinite;
+    box-shadow: 0 4px 16px rgba(244, 113, 58, 0.15);
+  }
+  [data-theme="dark"] .banner-eyebrow {
+    background: linear-gradient(
+      135deg,
+      rgba(45, 26, 16, 0.8) 0%,
+      rgba(46, 16, 101, 0.4) 100%
+    );
+  }
+  .banner-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f4713a, #ff6b9d);
+    box-shadow: 0 0 8px rgba(244, 113, 58, 0.6);
+    animation: pulse-dot 1.8s infinite;
+  }
+
+  .banner-title {
+    font-family: "Fraunces", serif;
+    font-size: clamp(26px, 4vw, 42px);
+    font-weight: 700;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #1c1917 0%, #f4713a 50%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    animation: fadeUp 0.4s 0.1s ease both;
+  }
+  [data-theme="dark"] .banner-title {
+    background: linear-gradient(135deg, #fafaf9 0%, #f4713a 50%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .banner-title em {
+    font-style: italic;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 50%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  .banner-sub {
+    font-size: 15px;
+    color: var(--ink3);
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.7;
+    animation: fadeUp 0.4s 0.2s ease both;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     LAYOUT
+  ═══════════════════════════════════════════════════ */
+  .edit-layout {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 36px 28px 80px;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     FORM CARD
+  ═══════════════════════════════════════════════════ */
+  .form-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    box-shadow: var(--shadow-sm);
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+    animation: fadeUp 0.5s 0.1s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Top accent stripe */
+  .form-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #f4713a, #ff6b9d, #818cf8);
+  }
+
+  /* Section heading */
+  .sec-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .sec-icon.orange {
+    background: var(--accent-soft);
+  }
+  .sec-icon.green {
+    background: var(--green-soft);
+  }
+  .sec-icon.blue {
+    background: var(--blue-soft);
+  }
+  .sec-title {
+    font-family: "Fraunces", serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .sec-sub {
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 2px;
+  }
+
+  /* Field */
+  .field {
+    margin-bottom: 20px;
+  }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink3);
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    margin-bottom: 7px;
+  }
+  .field label .req {
+    color: var(--accent);
+    margin-left: 2px;
+  }
+
+  .field input,
+  .field textarea,
+  .field select {
+    width: 100%;
+    padding: 11px 15px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    font-family: "Outfit", sans-serif;
+    outline: none;
+    transition: all var(--tr);
+    resize: vertical;
+    line-height: 1.6;
+  }
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus {
+    border-color: var(--accent);
+    background: var(--bg2);
+    box-shadow: 0 0 0 3px rgba(244, 113, 58, 0.1);
+  }
+  .field input::placeholder,
+  .field textarea::placeholder {
+    color: var(--ink4);
+  }
+  .field textarea {
+    min-height: 120px;
+  }
+
+  /* Char counter */
+  .char-counter {
+    font-size: 11px;
+    color: var(--ink3);
+    text-align: right;
+    margin-top: 5px;
+  }
+  .char-counter.warn {
+    color: var(--amber);
+  }
+  .char-counter.over {
+    color: #dc2626;
+  }
+
+  .field-hint {
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  /* Two column row */
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Divider */
+  .f-div {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 28px 0;
+  }
+
+  /* ── Slot counter ── */
+  .slot-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    background: var(--bg);
+    transition: all var(--tr);
+  }
+  .slot-wrap:focus-within {
+    border-color: var(--accent);
+    background: var(--bg2);
+    box-shadow: 0 0 0 3px rgba(244, 113, 58, 0.1);
+  }
+  .slot-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-sm);
+    border: 1.5px solid var(--border);
+    background: var(--bg2);
+    color: var(--ink2);
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--tr);
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .slot-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: scale(1.05);
+  }
+  .slot-num {
+    font-family: "Fraunces", serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+    min-width: 36px;
+    text-align: center;
+    line-height: 1;
+  }
+  .slot-info {
+    flex: 1;
+  }
+  .slot-info .si-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .slot-info .si-sub {
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 2px;
+  }
+
+  /* ── Skills tag input ── */
+  .skill-type-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .stype-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--r-sm);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink3);
+    transition: all var(--tr);
+    user-select: none;
+    font-family: "Outfit", sans-serif;
+    background: var(--bg);
+  }
+  .stype-btn.active-needed {
+    border-color: var(--green);
+    background: var(--green-soft);
+    color: var(--green);
+  }
+  .stype-btn.active-have {
+    border-color: var(--blue);
+    background: var(--blue-soft);
+    color: var(--blue);
+  }
+
+  .tags-input-box {
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    background: var(--bg);
+    padding: 10px 12px;
+    transition: all var(--tr);
+    min-height: 54px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    align-items: center;
+    cursor: text;
+  }
+  .tags-input-box:focus-within {
+    border-color: var(--accent);
+    background: var(--bg2);
+    box-shadow: 0 0 0 3px rgba(244, 113, 58, 0.1);
+  }
+  .skill-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    animation: fadeUp 0.2s ease;
+  }
+  .skill-tag.needed {
+    background: var(--green-soft);
+    color: var(--green);
+    border: 1px solid rgba(22, 163, 74, 0.25);
+  }
+  .skill-tag.have {
+    background: var(--blue-soft);
+    color: var(--blue);
+    border: 1px solid rgba(37, 99, 235, 0.25);
+  }
+  .skill-tag .tag-rm {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    transition: all 0.15s;
+    color: inherit;
+  }
+  .skill-tag .tag-rm:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: scale(1.1);
+  }
+
+  #tagInput {
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--ink);
+    font-family: "Outfit", sans-serif;
+    font-size: 14px;
+    min-width: 160px;
+    flex: 1;
+    padding: 2px 0;
+  }
+  #tagInput::placeholder {
+    color: var(--ink4);
+  }
+
+  /* ── Status toggle ── */
+  .status-toggle {
+    display: flex;
+    gap: 8px;
+  }
+  .status-opt {
+    flex: 1;
+    padding: 11px;
+    border-radius: var(--r);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink2);
+    text-align: center;
+    transition: all var(--tr);
+    background: var(--bg);
+  }
+  .status-opt:hover {
+    border-color: var(--ink3);
+    color: var(--ink);
+  }
+  .status-opt.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  /* ── Action buttons ── */
+  .action-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .save-btn {
+    flex: 1;
+    padding: 14px;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 100%);
+    color: #fff;
+    border: none;
+    border-radius: var(--r);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    box-shadow: 0 4px 16px rgba(244, 113, 58, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .save-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+    opacity: 0;
+    transition: opacity var(--tr);
+  }
+  .save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(244, 113, 58, 0.45);
+  }
+  .save-btn:hover::before {
+    opacity: 1;
+  }
+  .save-btn:active {
+    transform: translateY(0);
+  }
+
+  .cancel-btn {
+    padding: 14px 22px;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--ink2);
+    border-radius: var(--r);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+  }
+  .cancel-btn:hover {
+    border-color: var(--ink3);
+    color: var(--ink);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     RIGHT SIDEBAR
+  ═══════════════════════════════════════════════════ */
+  .side-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    transition:
+      background var(--tr),
+      border-color var(--tr);
+  }
+  .side-card:nth-child(1) {
+    animation: fadeUp 0.5s 0.15s ease both;
+  }
+  .side-card:nth-child(2) {
+    animation: fadeUp 0.5s 0.22s ease both;
+  }
+  .side-card:nth-child(3) {
+    animation: fadeUp 0.5s 0.29s ease both;
+  }
+
+  .side-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .side-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .side-icon.orange {
+    background: var(--accent-soft);
+  }
+  .side-icon.red {
+    background: #fee2e2;
+  }
+  .side-icon.green {
+    background: var(--green-soft);
+  }
+
+  /* Current idea preview */
+  .current-idea {
+    background: linear-gradient(135deg, var(--accent-soft), var(--bg2));
+    border: 1.5px solid rgba(244, 113, 58, 0.2);
+    border-radius: var(--r);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .ci-cat {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .ci-title {
+    font-family: "Fraunces", serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .ci-meta {
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 6px;
+  }
+
+  .side-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .side-stat:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .ss-label {
+    color: var(--ink3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ss-val {
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* Danger zone */
+  .danger-zone {
+    border: 1.5px solid rgba(220, 38, 38, 0.2);
+    border-radius: var(--r);
+    padding: 16px;
+  }
+  .dz-text {
+    font-size: 13px;
+    color: var(--ink3);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .delete-btn {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: 1.5px solid rgba(220, 38, 38, 0.3);
+    color: #dc2626;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: "Outfit", sans-serif;
+    transition: all var(--tr);
+  }
+  .delete-btn:hover {
+    background: #fee2e2;
+    border-color: #dc2626;
+    transform: translateY(-1px);
+  }
+
+  /* Changes badge */
+  .changes-badge {
+    display: none;
+    align-items: center;
+    gap: 7px;
+    background: var(--amber-soft);
+    color: var(--amber);
+    border: 1px solid rgba(217, 119, 6, 0.25);
+    padding: 9px 14px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 14px;
+    animation: fadeUp 0.3s ease;
+  }
+  .changes-badge.show {
+    display: flex;
+  }
+
+  @media (max-width: 768px) {
+    .edit-layout {
+      grid-template-columns: 1fr;
+    }
+    .edit-side {
+      display: none;
+    }
+    .form-card {
+      padding: 22px;
+    }
+    .field-row {
+      grid-template-columns: 1fr;
+    }
+    .action-row {
+      flex-direction: column-reverse;
+    }
+    .cancel-btn {
+      text-align: center;
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+
+<!-- ══ BANNER ══ -->
+<div class="page-banner">
+  <div class="banner-inner">
+    <div class="breadcrumb">
+      <a href="{{ url_for('index') }}">Explore</a>
+      <span class="sep">/</span>
+      <a href="{{ url_for('idea_detail', idea_id=idea.idea_id) }}"
+        >{{ idea.title | truncate(40) }}</a
+      >
+      <span class="sep">/</span>
+      <span>Edit</span>
+    </div>
+    <div class="banner-eyebrow">
+      <span class="banner-dot"></span> Make it better
+    </div>
+    <h1 class="banner-title">Edit your <em>idea</em> ✦</h1>
+    <p class="banner-sub">
+      Update the details, refine your pitch, or change the skills you're looking
+      for.
+    </p>
+  </div>
+</div>
+
+<!-- ══ EDIT LAYOUT ══ -->
+<div class="edit-layout">
+  <!-- FORM -->
+  <div class="form-card">
+    <!-- Unsaved changes badge -->
+    <div class="changes-badge" id="changesBadge">
+      ⚠ You have unsaved changes
+    </div>
+
+    <form
+      method="POST"
+      action="{{ url_for('edit_idea', idea_id=idea.idea_id) }}"
+      id="editForm"
+    >
+      
+      <!-- SECTION 1 — BASICS -->
+      <div class="sec-head">
+        <span class="sec-icon orange">✦</span>
+        <div>
+          <div class="sec-title">The Big Idea</div>
+          <div class="sec-sub">Core details that appear on your idea card</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Idea Title <span class="req">*</span></label>
+        <input
+          type="text"
+          name="title"
+          id="titleInput"
+          value="{{ idea.title }}"
+          maxlength="200"
+          required
+          placeholder="e.g. AI that reads legal contracts for small businesses"
+        />
+        <div class="char-counter" id="titleCounter">
+          {{ idea.title | length }} / 200
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Problem & Solution <span class="req">*</span></label>
+        <textarea
+          name="description"
+          id="descInput"
+          rows="6"
+          required
+          placeholder="What hurts for your user, and how do you fix it? Keep it simple and specific."
+        >
+{{ idea.description }}</textarea
+        >
+        <div class="char-counter" id="descCounter">
+          {{ idea.description | length }} chars
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Category <span class="req">*</span></label>
+          <select name="category" required>
+            {% for cat in
+            ['AI/ML','HealthTech','FinTech','CleanTech','EdTech','Other'] %}
+            <option
+              value="{{ cat }}"
+              {%
+              if
+              idea.category=""
+              ="cat"
+              %}selected{%
+              endif
+              %}
+            >
+              {{ cat }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Current Stage <span class="req">*</span></label>
+          <select name="stage" required>
+            {% for st in ['Just an idea','Building MVP','Launched','Growing'] %}
+            <option
+              value="{{ st }}"
+              {%
+              if
+              idea.stage=""
+              ="st"
+              %}selected{%
+              endif
+              %}
+            >
+              {{ st }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>One-line Pitch</label>
+        <input
+          type="text"
+          name="pitch_line"
+          value="{{ idea.pitch_line or '' }}"
+          placeholder="e.g. 'Duolingo meets GST filing'"
+          maxlength="150"
+        />
+        <div class="field-hint">
+          Optional. Helps builders and investors instantly get the concept.
+        </div>
+      </div>
+
+      <hr class="f-div" />
+
+      <!-- SECTION 2 — TEAM -->
+      <div class="sec-head">
+        <span class="sec-icon green">👥</span>
+        <div>
+          <div class="sec-title">Team & Skills</div>
+          <div class="sec-sub">Who are you looking for?</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Open Spots</label>
+        <div class="slot-wrap">
+          <button type="button" class="slot-btn" onclick="changeSlots(-1)">
+            −
+          </button>
+          <span class="slot-num" id="slotDisplay">{{ idea.slots_open }}</span>
+          <input
+            type="hidden"
+            name="slots_open"
+            id="slotsInput"
+            value="{{ idea.slots_open }}"
+          />
+          <div class="slot-info">
+            <div class="si-label">Co-founder slots open</div>
+            <div class="si-sub">
+              Currently showing
+              <span id="slotText">{{ idea.slots_open }}</span> open spot{{ 's'
+              if idea.slots_open != 1 }} on your card
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Skills</label>
+        <div class="skill-type-row">
+          <button
+            type="button"
+            class="stype-btn active-needed"
+            id="btnNeeded"
+            onclick="setSkillType('needed')"
+          >
+            🟢 Mark as Needed
+          </button>
+          <button
+            type="button"
+            class="stype-btn"
+            id="btnHave"
+            onclick="setSkillType('have')"
+          >
+            ✅ Already Have
+          </button>
+        </div>
+        <div
+          class="tags-input-box"
+          id="tagsBox"
+          onclick="document.getElementById('tagInput').focus()"
+        >
+          <!-- pre-populated by JS from existing skills -->
+          <input
+            type="text"
+            id="tagInput"
+            placeholder="Type skill and press Enter or comma…"
+          />
+        </div>
+        <div id="hiddenSkills"></div>
+        <div class="field-hint">
+          <strong>Green = needed</strong> &nbsp;·&nbsp;
+          <strong>Blue = already have</strong> &nbsp;·&nbsp; Press
+          <strong>Enter</strong> or <strong>,</strong> to add ·
+          <strong>Backspace</strong> to remove last
+        </div>
+      </div>
+
+      <hr class="f-div" />
+
+      <!-- SECTION 3 — SETTINGS -->
+      <div class="sec-head">
+        <span class="sec-icon blue">⚙️</span>
+        <div>
+          <div class="sec-title">Settings</div>
+          <div class="sec-sub">Visibility and investor preferences</div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Your City</label>
+          <input
+            type="text"
+            name="city_override"
+            value="{{ idea.city or '' }}"
+            placeholder="e.g. Bengaluru"
+          />
+        </div>
+        <div class="field">
+          <label>Seeking Investors?</label>
+          <select name="seeking_investors">
+            <option
+              value="0"
+              {%
+              if
+              not
+              idea.seeking_investors
+              %}selected{%
+              endif
+              %}
+            >
+              Not right now
+            </option>
+            <option
+              value="1"
+              {%
+              if
+              idea.seeking_investors
+              %}selected{%
+              endif
+              %}
+            >
+              Yes, open to it
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Idea Status</label>
+        <div class="status-toggle">
+          <button
+            type="button"
+            class="status-opt {% if idea.is_active %}active{% endif %}"
+            id="statusActive"
+            onclick="setStatus(1)"
+          >
+            ✅ Active — visible to everyone
+          </button>
+          <button
+            type="button"
+            class="status-opt {% if not idea.is_active %}active{% endif %}"
+            id="statusPaused"
+            onclick="setStatus(0)"
+          >
+            ⏸ Paused — hidden from feed
+          </button>
+        </div>
+        <input
+          type="hidden"
+          name="is_active"
+          id="statusInput"
+          value="{{ 1 if idea.is_active else 0 }}"
+        />
+        <div class="field-hint">
+          Pausing hides your idea from the feed but keeps all data safe.
+        </div>
+      </div>
+
+      <!-- Action row -->
+      <div class="action-row">
+        <a
+          href="{{ url_for('idea_detail', idea_id=idea.idea_id) }}"
+          class="cancel-btn"
+          >Cancel</a
+        >
+        <button type="submit" class="save-btn">✦ Save changes →</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="edit-side">
+    <!-- Live preview -->
+    <div class="side-card">
+      <div class="side-title">
+        <span class="side-icon orange">📊</span> Idea performance
+      </div>
+      <div class="current-idea">
+        <div class="ci-cat">{{ idea.category }}</div>
+        <div class="ci-title">{{ idea.title }}</div>
+        <div class="ci-meta">
+          📍 {{ idea.city or 'India' }} · {{ idea.stage }}
+        </div>
+      </div>
+      <div class="side-stat">
+        <span class="ss-label">👁 Total views</span>
+        <span class="ss-val">{{ idea.views }}</span>
+      </div>
+      <div class="side-stat">
+        <span class="ss-label">🙋 Applications</span>
+        <span class="ss-val">{{ idea.application_count }}</span>
+      </div>
+      <div class="side-stat">
+        <span class="ss-label">💬 Comments</span>
+        <span class="ss-val">{{ idea.comment_count }}</span>
+      </div>
+      <div class="side-stat">
+        <span class="ss-label">📅 Posted</span>
+        <span class="ss-val">{{ idea.time_ago }}</span>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="side-card">
+      <div class="side-title">
+        <span class="side-icon green">💡</span> Tips for more applications
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div
+          style="
+            display: flex;
+            gap: 9px;
+            font-size: 13px;
+            color: var(--ink2);
+            line-height: 1.5;
+          "
+        >
+          <span style="color: var(--accent); font-weight: 700; flex-shrink: 0"
+            >1.</span
+          >
+          Be specific about skills you need — "React developer" beats
+          "developer".
+        </div>
+        <div
+          style="
+            display: flex;
+            gap: 9px;
+            font-size: 13px;
+            color: var(--ink2);
+            line-height: 1.5;
+          "
+        >
+          <span style="color: var(--accent); font-weight: 700; flex-shrink: 0"
+            >2.</span
+          >
+          Update your stage as you progress — builders want to join the right
+          moment.
+        </div>
+        <div
+          style="
+            display: flex;
+            gap: 9px;
+            font-size: 13px;
+            color: var(--ink2);
+            line-height: 1.5;
+          "
+        >
+          <span style="color: var(--accent); font-weight: 700; flex-shrink: 0"
+            >3.</span
+          >
+          A one-line pitch dramatically improves first impressions.
+        </div>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="side-card">
+      <div class="side-title">
+        <span class="side-icon red">🗑</span> Danger zone
+      </div>
+      <div class="danger-zone">
+        <p class="dz-text">
+          Deleting your idea is permanent. All applications and comments will be
+          removed. Consider pausing instead.
+        </p>
+        <form
+          method="POST"
+          action="{{ url_for('delete_idea', idea_id=idea.idea_id) }}"
+          onsubmit="
+            return confirm(
+              'This is permanent. Delete this idea and all its data?',
+            );
+          "
+        >
+          
+          <button type="submit" class="delete-btn">
+            Delete idea permanently
+          </button>
+        </form>
+      </div>
+    </div>
+  </aside>
+</div>
+
+{% endblock %} {% block extra_scripts %}
+<script>
+  /* ── Detect unsaved changes ── */
+  let isDirty = false;
+  document.querySelectorAll('#editForm input, #editForm textarea, #editForm select').forEach(el => {
+    el.addEventListener('input', () => {
+      if (!isDirty) {
+        isDirty = true;
+        document.getElementById('changesBadge').classList.add('show');
+      }
+    });
+  });
+  document.getElementById('editForm').addEventListener('submit', () => { isDirty = false; });
+  window.addEventListener('beforeunload', e => {
+    if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  /* ── Slot counter ── */
+  function changeSlots(d) {
+    const input = document.getElementById('slotsInput');
+    const display = document.getElementById('slotDisplay');
+    const text = document.getElementById('slotText');
+    let v = Math.min(8, Math.max(1, parseInt(input.value) + d));
+    input.value = v; display.textContent = v;
+    text.textContent = v;
+    markDirty();
+  }
+
+  /* ── Char counters ── */
+  function updateCounter(inputId, counterId, max) {
+    const el = document.getElementById(inputId);
+    const counter = document.getElementById(counterId);
+    const len = el.value.length;
+    counter.textContent = max ? `${len} / ${max}` : `${len} chars`;
+    counter.className = 'char-counter' + (max && len > max * 0.9 ? (len > max ? ' over' : ' warn') : '');
+  }
+  document.getElementById('titleInput').addEventListener('input', () => updateCounter('titleInput','titleCounter',200));
+  document.getElementById('descInput').addEventListener('input', () => updateCounter('descInput','descCounter',0));
+
+  /* ── Status toggle ── */
+  function setStatus(val) {
+    document.getElementById('statusInput').value = val;
+    document.getElementById('statusActive').classList.toggle('active', val === 1);
+    document.getElementById('statusPaused').classList.toggle('active', val === 0);
+    markDirty();
+  }
+
+  /* ── Skills tag input ── */
+  let skillType = 'needed';
+  let skills = [];
+
+  // Pre-populate from Flask
+  {% if idea.skills %}
+  {% for skill in idea.skills %}
+  skills.push({ name: "{{ skill.skill_name | e }}", type: {{ '"needed"' if skill.is_needed else '"have"' }} });
+  {% endfor %}
+  {% endif %}
+
+  function setSkillType(type) {
+    skillType = type;
+    document.getElementById('btnNeeded').className = 'stype-btn' + (type === 'needed' ? ' active-needed' : '');
+    document.getElementById('btnHave').className   = 'stype-btn' + (type === 'have'   ? ' active-have'   : '');
+  }
+
+  function addSkill(name) {
+    name = name.trim().replace(/,+$/, '').trim();
+    if (!name) return;
+    if (skills.find(s => s.name.toLowerCase() === name.toLowerCase())) return;
+    skills.push({ name, type: skillType });
+    renderSkills();
+    markDirty();
+  }
+
+  function removeSkill(idx) {
+    skills.splice(idx, 1);
+    renderSkills();
+    markDirty();
+  }
+
+  function renderSkills() {
+    const box = document.getElementById('tagsBox');
+    const input = document.getElementById('tagInput');
+    const hidden = document.getElementById('hiddenSkills');
+    box.querySelectorAll('.skill-tag').forEach(el => el.remove());
+    hidden.innerHTML = '';
+    skills.forEach((s, i) => {
+      const tag = document.createElement('span');
+      tag.className = `skill-tag ${s.type}`;
+      tag.innerHTML = `${s.name}<button type="button" class="tag-rm" onclick="removeSkill(${i})">×</button>`;
+      box.insertBefore(tag, input);
+      hidden.innerHTML += `<input type="hidden" name="skill_names[]"  value="${s.name}">`;
+      hidden.innerHTML += `<input type="hidden" name="skill_needed[]" value="${s.type === 'needed' ? 1 : 0}">`;
+    });
+  }
+
+  document.getElementById('tagInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addSkill(this.value); this.value = '';
+    }
+    if (e.key === 'Backspace' && !this.value && skills.length) removeSkill(skills.length - 1);
+  });
+  document.getElementById('tagInput').addEventListener('blur', function() {
+    if (this.value.trim()) { addSkill(this.value); this.value = ''; }
+  });
+
+  function markDirty() {
+    if (!isDirty) {
+      isDirty = true;
+      document.getElementById('changesBadge').classList.add('show');
+    }
+  }
+
+  // Init render
+  renderSkills();
+</script>
+{% endblock %}
