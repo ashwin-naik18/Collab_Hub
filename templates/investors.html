@@ -1,0 +1,161 @@
+{% extends "base.html" %} {% block title %}Investors — CollabHub{% endblock %}
+{% block extra_styles %}
+<style>
+  .investors-page {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 50px 24px 80px;
+  }
+
+  .investors-head {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .investors-head h1 {
+    font-family: "Fraunces", serif;
+    font-size: clamp(34px, 5vw, 48px);
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+
+  .investors-head p {
+    color: var(--ink3);
+    font-size: 15px;
+  }
+
+  .investors-search {
+    max-width: 420px;
+    margin: 24px auto 0;
+    display: flex;
+    gap: 10px;
+  }
+
+  .investors-search input {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--ink);
+    font-size: 14px;
+    outline: none;
+  }
+
+  [data-theme="dark"] .investors-search input {
+    background: rgba(26, 25, 22, 0.75);
+  }
+
+  .investors-search button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 55%, #6366f1 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .investors-grid {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  .investor-card {
+    padding: 22px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(12px);
+    transition: all var(--tr);
+  }
+
+  [data-theme="dark"] .investor-card {
+    background: rgba(26, 25, 22, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .investor-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .investor-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #f4713a 0%, #ff6b9d 55%, #6366f1 100%);
+    margin-bottom: 14px;
+  }
+
+  .investor-card h3 {
+    font-size: 17px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .investor-city {
+    font-size: 13px;
+    color: var(--accent-solid);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .investor-bio {
+    font-size: 13.5px;
+    color: var(--ink3);
+    line-height: 1.6;
+  }
+
+  .investors-empty {
+    text-align: center;
+    color: var(--ink3);
+    padding: 60px 20px;
+    font-size: 15px;
+  }
+</style>
+{% endblock %} {% block content %}
+
+<section class="investors-page">
+  <div class="investors-head">
+    <h1>Meet our investors</h1>
+    <p>Builders on CollabHub who are backing bold ideas.</p>
+
+    <form class="investors-search" method="GET" action="{{ url_for('investors') }}">
+      <input
+        type="text"
+        name="search"
+        placeholder="Search by name or city..."
+        value="{{ search }}"
+      />
+      <button type="submit">Search</button>
+    </form>
+  </div>
+
+  {% if investors %}
+  <div class="investors-grid">
+    {% for inv in investors %}
+    <div class="investor-card">
+      <div class="investor-avatar">{{ inv.full_name[0] | upper }}</div>
+      <h3>{{ inv.full_name }}</h3>
+      {% if inv.city %}<div class="investor-city">📍 {{ inv.city }}</div>{% endif %}
+      <p class="investor-bio">
+        {{ inv.bio if inv.bio else "This investor hasn't added a bio yet." }}
+      </p>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="investors-empty">No investors found.</div>
+  {% endif %}
+</section>
+
+{% endblock %}

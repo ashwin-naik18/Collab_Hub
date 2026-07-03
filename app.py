@@ -317,6 +317,32 @@ def index():
     )
 
 
+@app.route('/investors')
+@login_required
+def investors():
+    search = request.args.get('search', '').strip()
+
+    if search:
+        rows = execute_query(
+            """SELECT user_id, full_name, city, bio, created_at
+               FROM users
+               WHERE role='investor' AND (full_name LIKE %s OR city LIKE %s)
+               ORDER BY created_at DESC""",
+            (f"%{search}%", f"%{search}%"),
+            fetch=True
+        )
+    else:
+        rows = execute_query(
+            """SELECT user_id, full_name, city, bio, created_at
+               FROM users
+               WHERE role='investor'
+               ORDER BY created_at DESC""",
+            fetch=True
+        )
+
+    return render_template('investors.html', investors=rows or [], search=search)
+
+
 @app.route('/post-idea', methods=['GET', 'POST'])
 @login_required
 def post_idea():
