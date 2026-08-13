@@ -46,7 +46,7 @@ CollabHub/
 │   ├── register.html
 │   └── verify_otp.html
 ```
-
+ 
 ## Installation
 
 1. Clone the repository
