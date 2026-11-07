@@ -10,10 +10,7 @@ class Config:
     'password': os.environ.get('DB_PASSWORD'),
     'database': os.environ.get('DB_NAME'),
     'charset': 'utf8mb4',
-    'autocommit': True,
-    'ssl_ca': os.environ.get('DB_SSL_CA'),
-    'ssl_verify_cert': True,
-    'ssl_verify_identity': True
+    'autocommit': True
     }
 
     MAIL_SERVER         = os.environ.get('MAIL_SERVER') 
