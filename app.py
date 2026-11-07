@@ -2,10 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from functools import wraps
-from flask_mail import Mail, Message
 import os
 import requests
-import random, string
+import secrets
 
 from config import Config
 from db import execute_query, init_db_pool
@@ -13,7 +12,6 @@ from db import execute_query, init_db_pool
 
 app = Flask(__name__)
 app.config.from_object(Config)
-mail = Mail(app)
 
 with app.app_context():
     init_db_pool()
@@ -31,18 +29,33 @@ def login_required(f):
 
 
 def generate_otp():
-    return ''.join(random.choices(string.digits, k=6))
+    return f"{secrets.randbelow(1000000):06d}"
 
 
 def store_otp(email, otp):
     expires_at = datetime.now() + timedelta(minutes=Config.OTP_EXPIRY_MINUTES)
     execute_query(
+        "UPDATE otp_verifications SET is_used=1 WHERE email=%s AND is_used=0",
+        (email,)
+    )
+    execute_query(
         "INSERT INTO otp_verifications (email, otp_code, expires_at) VALUES (%s, %s, %s)",
         (email, otp, expires_at)
     )
+    execute_query(
+        "UPDATE pending_registrations SET expires_at=%s WHERE email=%s",
+        (expires_at, email)
+    )
+
+
+def invalidate_otp(email, otp):
+    execute_query(
+        "UPDATE otp_verifications SET is_used=1 WHERE email=%s AND otp_code=%s AND is_used=0",
+        (email, otp)
+    )
+
 
 def send_otp_email(email, otp, user_name="User"):
-    
     api_url = os.environ.get("OTP_API_URL")
     api_secret = os.environ.get("OTP_API_SECRET")
 
@@ -63,9 +76,7 @@ def send_otp_email(email, otp, user_name="User"):
             timeout=25,
             allow_redirects=True
         )
-
         response.raise_for_status()
-
         result = response.json()
 
         if result.get("success"):
@@ -78,7 +89,6 @@ def send_otp_email(email, otp, user_name="User"):
     except requests.RequestException as e:
         print(f"OTP API request failed: {e}")
         return False
-
     except ValueError:
         print("OTP API returned an invalid response.")
         return False
@@ -157,7 +167,7 @@ def register():
     password = request.form.get('password', '')
     bio = request.form.get('bio', '').strip()
     city = request.form.get('city', '').strip()
-    role = request.form.get('role', 'builder')
+    role = request.form.get('role', 'builder').strip().lower()
 
     if not all([full_name, email, phone, password]):
         flash('All required fields must be filled', 'error')
@@ -171,93 +181,230 @@ def register():
         flash('Phone number must be 10 digits', 'error')
         return redirect(url_for('register'))
 
-    if execute_query(
+    if role not in ('builder', 'investor'):
+        role = 'builder'
+
+    existing_user = execute_query(
         "SELECT user_id FROM users WHERE email=%s OR phone=%s",
         (email, phone),
         fetch_one=True
-    ):
-        flash('Email or phone already registered', 'error')
+    )
+
+    if existing_user:
+        flash('Email or phone already registered. Please log in.', 'error')
+        return redirect(url_for('login'))
+
+    execute_query(
+        "DELETE FROM pending_registrations WHERE expires_at<=NOW()"
+    )
+
+    pending = execute_query(
+        "SELECT email, phone FROM pending_registrations WHERE (email=%s OR phone=%s) AND expires_at>NOW()",
+        (email, phone),
+        fetch_one=True
+    )
+
+    if pending and (pending['email'] != email or pending['phone'] != phone):
+        flash('A pending registration already uses this email or phone. Please use the same details or try again later.', 'error')
         return redirect(url_for('register'))
+
+    if pending:
+        execute_query(
+            "DELETE FROM pending_registrations WHERE email=%s",
+            (email,)
+        )
 
     otp = generate_otp()
+    password_hash = generate_password_hash(password)
 
-    # Send OTP before creating the account
-    email_sent = send_otp_email(email, otp, full_name)
-
-    if not email_sent:
-        flash('Unable to send verification email. Please try again.', 'error')
-        return redirect(url_for('register'))
-
-    user_id = execute_query(
-        """INSERT INTO users
-        (full_name, email, phone, password_hash, bio, city, role, is_verified)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,0)""",
+    execute_query(
+        """INSERT INTO pending_registrations
+        (full_name, email, phone, password_hash, bio, city, role, expires_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
         (
-            full_name, email, phone,
-            generate_password_hash(password),
-            bio, city, role
+            full_name, email, phone, password_hash, bio, city, role,
+            datetime.now() + timedelta(minutes=Config.OTP_EXPIRY_MINUTES)
         )
     )
 
     store_otp(email, otp)
 
+    if not send_otp_email(email, otp, full_name):
+        invalidate_otp(email, otp)
+        execute_query(
+            "DELETE FROM pending_registrations WHERE email=%s",
+            (email,)
+        )
+        flash('Unable to send verification email. Please try again.', 'error')
+        return redirect(url_for('register'))
+
     session['verification_email'] = email
-    session['verification_user_id'] = user_id
-
-    flash('Account created! Check your email for the OTP.', 'success')
+    session.pop('verification_user_id', None)
+    flash('Verification code sent. Your account will be created after email verification.', 'success')
     return redirect(url_for('verify_otp'))
-
 
 
 @app.route('/verify-otp', methods=['GET', 'POST'])
 def verify_otp():
-    if 'verification_email' not in session:
+    email = session.get('verification_email')
+
+    if not email:
         flash('Please register first', 'warning')
         return redirect(url_for('register'))
-
-    email = session['verification_email']
 
     if request.method == 'GET':
         return render_template('verify_otp.html', email=email)
 
     otp = request.form.get('otp', '').strip()
-    if len(otp) != 6:
+
+    if len(otp) != 6 or not otp.isdigit():
         flash('Please enter a valid 6-digit OTP', 'error')
         return redirect(url_for('verify_otp'))
 
     record = execute_query(
-        "SELECT * FROM otp_verifications WHERE email=%s AND otp_code=%s AND is_used=0 AND expires_at>NOW() ORDER BY created_at DESC LIMIT 1",
-        (email, otp), fetch_one=True
+        """SELECT * FROM otp_verifications
+        WHERE email=%s AND otp_code=%s AND is_used=0 AND expires_at>NOW()
+        ORDER BY created_at DESC LIMIT 1""",
+        (email, otp),
+        fetch_one=True
     )
+
     if not record:
         flash('Invalid or expired OTP. Try again.', 'error')
         return redirect(url_for('verify_otp'))
 
-    execute_query("UPDATE otp_verifications SET is_used=1 WHERE otp_id=%s", (record['otp_id'],))
-    user_id = session.pop('verification_user_id')
-    session.pop('verification_email')
-    execute_query("UPDATE users SET is_verified=1 WHERE user_id=%s", (user_id,))
+    pending = execute_query(
+        "SELECT * FROM pending_registrations WHERE email=%s AND expires_at>NOW()",
+        (email,),
+        fetch_one=True
+    )
 
-    user = execute_query("SELECT full_name FROM users WHERE user_id=%s", (user_id,), fetch_one=True)
-    session['user_id']   = user_id
-    session['user_name'] = user['full_name'] if user else ''
+    if pending:
+        existing_user = execute_query(
+            "SELECT user_id, full_name, email, phone, is_verified FROM users WHERE email=%s OR phone=%s",
+            (email, pending['phone']),
+            fetch_one=True
+        )
+
+        if existing_user:
+            if existing_user['email'] == email and existing_user['phone'] == pending['phone']:
+                if not existing_user['is_verified']:
+                    execute_query(
+                        "UPDATE users SET is_verified=1 WHERE user_id=%s",
+                        (existing_user['user_id'],)
+                    )
+                user_id = existing_user['user_id']
+                user_name = existing_user['full_name']
+            else:
+                invalidate_otp(email, otp)
+                execute_query("DELETE FROM pending_registrations WHERE email=%s", (email,))
+                session.pop('verification_email', None)
+                session.pop('verification_user_id', None)
+                flash('An account with this email or phone already exists. Please log in.', 'error')
+                return redirect(url_for('login'))
+        else:
+            execute_query(
+                """INSERT INTO users
+                (full_name, email, phone, password_hash, bio, city, role, is_verified)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, 1)""",
+                (
+                    pending['full_name'],
+                    pending['email'],
+                    pending['phone'],
+                    pending['password_hash'],
+                    pending['bio'],
+                    pending['city'],
+                    pending['role']
+                )
+            )
+
+            user = execute_query(
+                "SELECT user_id, full_name FROM users WHERE email=%s",
+                (email,),
+                fetch_one=True
+            )
+
+            if not user:
+                flash('Account creation failed. Please try verifying again.', 'error')
+                return redirect(url_for('verify_otp'))
+
+            user_id = user['user_id']
+            user_name = user['full_name']
+
+        execute_query("DELETE FROM pending_registrations WHERE email=%s", (email,))
+
+    else:
+        user = execute_query(
+            "SELECT user_id, full_name FROM users WHERE email=%s AND is_verified=0",
+            (email,),
+            fetch_one=True
+        )
+
+        if not user:
+            invalidate_otp(email, otp)
+            session.pop('verification_email', None)
+            session.pop('verification_user_id', None)
+            flash('Registration session expired. Please register again.', 'error')
+            return redirect(url_for('register'))
+
+        execute_query(
+            "UPDATE users SET is_verified=1 WHERE user_id=%s",
+            (user['user_id'],)
+        )
+        user_id = user['user_id']
+        user_name = user['full_name']
+
+    execute_query(
+        "UPDATE otp_verifications SET is_used=1 WHERE otp_id=%s",
+        (record['otp_id'],)
+    )
+
+    session.pop('verification_email', None)
+    session.pop('verification_user_id', None)
+    session['user_id'] = user_id
+    session['user_name'] = user_name
+
     flash('Email verified! Welcome to CollabHub 🎉', 'success')
     return redirect(url_for('index'))
 
 
 @app.route('/resend-otp', methods=['POST'])
 def resend_otp():
-    email   = session.get('verification_email')
-    user_id = session.get('verification_user_id')
+    email = session.get('verification_email')
 
     if not email:
         flash('Session expired. Please register again.', 'error')
         return redirect(url_for('register'))
 
-    user = execute_query("SELECT full_name FROM users WHERE user_id=%s", (user_id,), fetch_one=True)
-    otp  = generate_otp()
+    pending = execute_query(
+        "SELECT full_name FROM pending_registrations WHERE email=%s",
+        (email,),
+        fetch_one=True
+    )
+
+    if pending:
+        user_name = pending['full_name']
+    else:
+        user = execute_query(
+            "SELECT full_name FROM users WHERE email=%s AND is_verified=0",
+            (email,),
+            fetch_one=True
+        )
+        if not user:
+            session.pop('verification_email', None)
+            session.pop('verification_user_id', None)
+            flash('Registration session expired. Please register again.', 'error')
+            return redirect(url_for('register'))
+        user_name = user['full_name']
+
+    otp = generate_otp()
     store_otp(email, otp)
-    send_otp_email(email, otp, user['full_name'] if user else 'User')
+
+    if not send_otp_email(email, otp, user_name):
+        invalidate_otp(email, otp)
+        flash('Unable to resend OTP. Please try again.', 'error')
+        return redirect(url_for('verify_otp'))
+
     flash('OTP resent! Check your email.', 'success')
     return redirect(url_for('verify_otp'))
 
@@ -276,16 +423,43 @@ def login():
 
     user = execute_query("SELECT * FROM users WHERE email=%s", (email,), fetch_one=True)
 
-    if not user or not check_password_hash(user['password_hash'], password):
+    if not user:
+        pending = execute_query(
+            "SELECT full_name, password_hash FROM pending_registrations WHERE email=%s",
+            (email,),
+            fetch_one=True
+        )
+
+        if pending and check_password_hash(pending['password_hash'], password):
+            session['verification_email'] = email
+            otp = generate_otp()
+            store_otp(email, otp)
+
+            if not send_otp_email(email, otp, pending['full_name']):
+                invalidate_otp(email, otp)
+                flash('Unable to send verification email. Please try again.', 'error')
+                return redirect(url_for('login'))
+
+            flash('Your registration is still pending. We sent you a new verification code.', 'warning')
+            return redirect(url_for('verify_otp'))
+
+        flash('Invalid email or password', 'error')
+        return redirect(url_for('login'))
+
+    if not check_password_hash(user['password_hash'], password):
         flash('Invalid email or password', 'error')
         return redirect(url_for('login'))
 
     if not user['is_verified']:
-        session['verification_email']   = user['email']
-        session['verification_user_id'] = user['user_id']
+        session['verification_email'] = user['email']
         otp = generate_otp()
         store_otp(user['email'], otp)
-        send_otp_email(user['email'], otp, user['full_name'])
+
+        if not send_otp_email(user['email'], otp, user['full_name']):
+            invalidate_otp(user['email'], otp)
+            flash('Unable to send verification email. Please try again.', 'error')
+            return redirect(url_for('login'))
+
         flash('Please verify your email first.', 'warning')
         return redirect(url_for('verify_otp'))
 
