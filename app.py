@@ -3,6 +3,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from functools import wraps
 from flask_mail import Mail, Message
+import os
+import requests
 import random, string
 
 from config import Config
@@ -39,39 +41,47 @@ def store_otp(email, otp):
         (email, otp, expires_at)
     )
 
-
 def send_otp_email(email, otp, user_name="User"):
-   
-    if not app.config.get('MAIL_USERNAME'):
-        print(f"[DEV] OTP for {email}: {otp}")
-        return
+    
+    api_url = os.environ.get("OTP_API_URL")
+    api_secret = os.environ.get("OTP_API_SECRET")
 
-    msg = Message(
-        subject='Your CollabHub Verification Code',
-        sender=app.config['MAIL_DEFAULT_SENDER'],
-        recipients=[email]
-    )
-    msg.html = f"""
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-        <div style="background:linear-gradient(135deg,#f4713a,#ff6b9d);color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0">
-            <h1>🚀 CollabHub</h1>
-        </div>
-        <div style="background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px">
-            <h2>Hello {user_name}!</h2>
-            <p>Your verification code is:</p>
-            <div style="font-size:36px;font-weight:bold;color:#f4713a;letter-spacing:10px;text-align:center;padding:20px">
-                {otp}
-            </div>
-            <p>⏰ Expires in {Config.OTP_EXPIRY_MINUTES} minutes.</p>
-            <p>If you didn't request this, ignore this email.</p>
-        </div>
-    </div>
-    """
+    if not api_url or not api_secret:
+        print("OTP email configuration is missing.")
+        return False
+
+    payload = {
+        "secret": api_secret,
+        "email": email,
+        "otp": str(otp)
+    }
+
     try:
-        mail.send(msg)
-    except Exception as e:
-        print(f"Email send failed: {e}")
-        print(f"[DEV] OTP for {email}: {otp}")
+        response = requests.post(
+            api_url,
+            json=payload,
+            timeout=25,
+            allow_redirects=True
+        )
+
+        response.raise_for_status()
+
+        result = response.json()
+
+        if result.get("success"):
+            print(f"OTP email sent successfully to {email}")
+            return True
+
+        print(f"OTP email service rejected the request: {result.get('message')}")
+        return False
+
+    except requests.RequestException as e:
+        print(f"OTP API request failed: {e}")
+        return False
+
+    except ValueError:
+        print("OTP API returned an invalid response.")
+        return False
 
 
 def get_current_user():
@@ -142,40 +152,61 @@ def register():
         return render_template('register.html')
 
     full_name = request.form.get('full_name', '').strip()
-    email     = request.form.get('email', '').strip().lower()
-    phone     = request.form.get('phone', '').strip()
-    password  = request.form.get('password', '')
-    bio       = request.form.get('bio', '').strip()
-    city      = request.form.get('city', '').strip()
-    role      = request.form.get('role', 'builder')
+    email = request.form.get('email', '').strip().lower()
+    phone = request.form.get('phone', '').strip()
+    password = request.form.get('password', '')
+    bio = request.form.get('bio', '').strip()
+    city = request.form.get('city', '').strip()
+    role = request.form.get('role', 'builder')
 
     if not all([full_name, email, phone, password]):
         flash('All required fields must be filled', 'error')
         return redirect(url_for('register'))
+
     if len(password) < 8:
         flash('Password must be at least 8 characters', 'error')
         return redirect(url_for('register'))
+
     if len(phone) != 10 or not phone.isdigit():
         flash('Phone number must be 10 digits', 'error')
         return redirect(url_for('register'))
-    if execute_query("SELECT user_id FROM users WHERE email=%s OR phone=%s", (email, phone), fetch_one=True):
+
+    if execute_query(
+        "SELECT user_id FROM users WHERE email=%s OR phone=%s",
+        (email, phone),
+        fetch_one=True
+    ):
         flash('Email or phone already registered', 'error')
         return redirect(url_for('register'))
 
+    otp = generate_otp()
+
+    # Send OTP before creating the account
+    email_sent = send_otp_email(email, otp, full_name)
+
+    if not email_sent:
+        flash('Unable to send verification email. Please try again.', 'error')
+        return redirect(url_for('register'))
+
     user_id = execute_query(
-        "INSERT INTO users (full_name, email, phone, password_hash, bio, city, role, is_verified) VALUES (%s,%s,%s,%s,%s,%s,%s,0)",
-        (full_name, email, phone, generate_password_hash(password), bio, city, role)
+        """INSERT INTO users
+        (full_name, email, phone, password_hash, bio, city, role, is_verified)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,0)""",
+        (
+            full_name, email, phone,
+            generate_password_hash(password),
+            bio, city, role
+        )
     )
 
-    otp = generate_otp()
-    print(otp)
     store_otp(email, otp)
-    send_otp_email(email, otp, full_name)
 
-    session['verification_email']   = email
+    session['verification_email'] = email
     session['verification_user_id'] = user_id
+
     flash('Account created! Check your email for the OTP.', 'success')
     return redirect(url_for('verify_otp'))
+
 
 
 @app.route('/verify-otp', methods=['GET', 'POST'])
