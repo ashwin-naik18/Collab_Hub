@@ -46,13 +46,13 @@ CollabHub/
 │   ├── register.html
 │   └── verify_otp.html
 ```
-
+ 
 ## Installation
 
 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/ashwin-naik18/Collab_Hub
 ```
 
 2. Move into the project directory
